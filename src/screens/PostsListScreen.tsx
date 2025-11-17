@@ -1,50 +1,81 @@
-import * as React from 'react';
-import {View, FlatList, Button} from 'react-native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {RootStackParamList} from '@/navigation/AppNavigator';
-import PostCard from '@/components/PostCard';
-import {Post} from '@/types/post';
+import React from 'react';
+import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
+import {useSelector} from 'react-redux';
+import {RootState} from '@/state/store';
+import {Post} from '@/state/posts/types';
+import {useNavigation} from '@react-navigation/native';
 
-// TODO: replace with Firestore subscription
-const MOCK: Post[] = [
-  {
-    id: '1',
-    text: 'Bienvenue à CareQueue',
-    createdAt: Date.now(),
-    authorId: 'u1',
-  },
-  {
-    id: '2',
-    text: 'Photo du jour',
-    imageUrl: 'https://placekitten.com/300/200',
-    createdAt: Date.now() - 5000,
-    authorId: 'u2',
-  },
-];
+const PostsListScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
+  const posts = useSelector<RootState, Post[]>(state => state.posts.items);
 
-export default function PostsListScreen({
-  navigation,
-}: NativeStackScreenProps<RootStackParamList, 'Tabs'>) {
-  const [data] = React.useState(MOCK);
+  const handleCreatePress = () => {
+    navigation.navigate('CreatePost'); // 👈 make sure this route exists in AppNavigator
+  };
 
   return (
-    <View style={{flex: 1}}>
+    <View style={styles.container}>
       <FlatList
-        data={data}
-        keyExtractor={it => it.id}
+        data={posts}
+        keyExtractor={item => item.id}
         renderItem={({item}) => (
-          <PostCard
-            post={item}
-            onPress={() => navigation.navigate('PostDetail', {id: item.id})}
-          />
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() =>
+              navigation.navigate('PostDetail', {postId: item.id})
+            }>
+            <Text style={styles.title}>{item.title}</Text>
+            {item.authorName ? (
+              <Text style={styles.meta}>👤 {item.authorName}</Text>
+            ) : null}
+            <Text style={styles.body} numberOfLines={2}>
+              {item.body}
+            </Text>
+          </TouchableOpacity>
         )}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
-      <View style={{padding: 12}}>
-        <Button
-          title="Create"
-          onPress={() => navigation.navigate('CreatePost')}
-        />
-      </View>
+
+      {/* Floating "+" button */}
+      <TouchableOpacity style={styles.fab} onPress={handleCreatePress}>
+        <Text style={styles.fabText}>＋</Text>
+      </TouchableOpacity>
     </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {flex: 1, padding: 16, backgroundColor: '#fff'},
+  card: {
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {fontSize: 16, fontWeight: '600', marginBottom: 4},
+  meta: {fontSize: 12, color: '#777', marginBottom: 4},
+  body: {fontSize: 14, color: '#555'},
+  separator: {height: 12},
+  fab: {
+    position: 'absolute',
+    right: 24,
+    bottom: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#2563EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  fabText: {
+    fontSize: 32,
+    color: '#fff',
+    marginTop: -2,
+  },
+});
+
+export default PostsListScreen;
