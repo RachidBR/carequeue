@@ -8,7 +8,7 @@ import linking from './src/navigation/linking';
 import './src/i18n';
 import {initFirebase} from './src/services/firebase';
 
-initFirebase();
+// initFirebase();
 
 export default function App() {
   return (

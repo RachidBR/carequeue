@@ -1,64 +1,105 @@
-import * as React from 'react';
-import {View, TextInput, Button, Image, Alert} from 'react-native';
+// TODO: upload image to Firebase Storage → get URL
+// TODO: save Firestore doc { text: v.text, imageUrl import React from 'react';
+import {View, Text, StyleSheet, TextInput, Button} from 'react-native';
 import {Formik} from 'formik';
 import * as Yup from 'yup';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {useDispatch} from 'react-redux';
+import {addPost} from '@/state/posts/postsSlice';
+import {AppDispatch} from '@/state/store';
+import {useNavigation} from '@react-navigation/native';
 
-const Schema = Yup.object({text: Yup.string().min(1).required()});
+const CreatePostSchema = Yup.object().shape({
+  title: Yup.string().trim().required('Title is required'),
+  body: Yup.string().trim().min(5, 'Body is too short'),
+});
 
-export default function CreatePostScreen() {
-  const [imageUri, setImageUri] = React.useState<string | undefined>();
-
-  const pickFromLibrary = async () => {
-    const res = await launchImageLibrary({mediaType: 'photo'});
-    const uri = res.assets?.[0]?.uri;
-    if (uri) setImageUri(uri);
-  };
-  const takePhoto = async () => {
-    const res = await launchCamera({mediaType: 'photo'});
-    const uri = res.assets?.[0]?.uri;
-    if (uri) setImageUri(uri);
-  };
+const CreatePostScreen: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const navigation = useNavigation<any>();
 
   return (
-    <Formik
-      initialValues={{text: ''}}
-      validationSchema={Schema}
-      onSubmit={async v => {
-        try {
-          // TODO: upload image to Firebase Storage → get URL
-          // TODO: save Firestore doc { text: v.text, imageUrl }
-          Alert.alert('Posted', 'Will save to Firestore in the next step');
-        } catch (e) {
-          Alert.alert('Error', String(e));
-        }
-      }}>
-      {({handleChange, handleBlur, handleSubmit, values}) => (
-        <View style={{flex: 1, padding: 16, gap: 12}}>
-          <TextInput
-            placeholder="Write something…"
-            value={values.text}
-            onChangeText={handleChange('text')}
-            onBlur={handleBlur('text')}
-            style={{
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 8,
-              padding: 12,
-            }}
-          />
-          {imageUri ? (
-            <Image
-              source={{uri: imageUri}}
-              style={{width: '100%', height: 200, borderRadius: 8}}
-            />
-          ) : null}
+    <View style={styles.container}>
+      <Text style={styles.title}>Create Post</Text>
 
-          <Button title="Pick from gallery" onPress={pickFromLibrary} />
-          <Button title="Take a photo" onPress={takePhoto} />
-          <Button title="Post" onPress={() => handleSubmit()} />
-        </View>
-      )}
-    </Formik>
+      <Formik
+        initialValues={{title: '', body: ''}}
+        validationSchema={CreatePostSchema}
+        onSubmit={(values, helpers) => {
+          dispatch(
+            addPost({
+              title: values.title.trim(),
+              body: values.body.trim(),
+            }),
+          );
+          helpers.resetForm();
+          navigation.goBack();
+        }}>
+        {({
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          values,
+          errors,
+          touched,
+        }) => (
+          <View style={styles.form}>
+            <Text style={styles.label}>Title</Text>
+            <TextInput
+              style={styles.input}
+              value={values.title}
+              onChangeText={handleChange('title')}
+              onBlur={handleBlur('title')}
+              placeholder="Enter a clear title"
+            />
+            {touched.title && errors.title ? (
+              <Text style={styles.error}>{errors.title}</Text>
+            ) : null}
+
+            <Text style={styles.label}>Body</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={values.body}
+              onChangeText={handleChange('body')}
+              onBlur={handleBlur('body')}
+              placeholder="Write the content of the post..."
+              multiline
+            />
+            {touched.body && errors.body ? (
+              <Text style={styles.error}>{errors.body}</Text>
+            ) : null}
+
+            {/* Later: add image picker section here */}
+
+            <View style={styles.buttonWrapper}>
+              <Button title="Publish" onPress={() => handleSubmit()} />
+            </View>
+          </View>
+        )}
+      </Formik>
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {flex: 1, padding: 16, backgroundColor: '#fff'},
+  title: {fontSize: 20, fontWeight: '700', marginBottom: 16},
+  form: {gap: 12},
+  label: {fontSize: 14, fontWeight: '500'},
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 14,
+    backgroundColor: '#fafafa',
+  },
+  textArea: {
+    height: 120,
+    textAlignVertical: 'top',
+  },
+  error: {fontSize: 12, color: 'red'},
+  buttonWrapper: {marginTop: 16},
+});
+
+export default CreatePostScreen;
