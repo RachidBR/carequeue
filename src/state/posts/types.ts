@@ -3,8 +3,10 @@ export type Post = {
     title: string;
     body: string;
     imageUrl?: string | null;
-    createdAt: string; // ISO string
+    createdAt: string; 
     authorName?: string;
+    imageUri?: string | null; 
+
 };
 
 export type PostsState = {

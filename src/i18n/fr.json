@@ -13,13 +13,17 @@
     "notFoundTitle": "Annonce introuvable",
     "notFoundBody": "Elle a peut-être été supprimée ou n'est plus disponible."
   },
-  "createPost": {
+   "createPost": {
     "screenTitle": "Nouvelle annonce",
     "titleLabel": "Titre",
     "bodyLabel": "Contenu",
     "submit": "Publier",
     "titleRequired": "Le titre est obligatoire",
-    "bodyTooShort": "Le contenu est trop court"
+    "bodyTooShort": "Le contenu est trop court",
+    "addImage": "Ajouter une image",
+    "takePhoto": "Prendre une photo",
+    "chooseFromLibrary": "Choisir dans la galerie",
+    "removeImage": "Supprimer l'image"
   },
   "settings": {
     "screenTitle": "Paramètres",

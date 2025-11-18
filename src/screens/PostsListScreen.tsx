@@ -5,6 +5,7 @@ import {RootState} from '@/state/store';
 import {Post} from '@/state/posts/types';
 import {useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
+import {Image} from 'react-native';
 
 const PostsListScreen: React.FC = () => {
   const {t} = useTranslation();
@@ -28,15 +29,23 @@ const PostsListScreen: React.FC = () => {
             onPress={() =>
               navigation.navigate('PostDetail', {postId: item.id})
             }>
-            <Text style={styles.title}>{item.title}</Text>
-            {item.authorName ? (
-              <Text style={styles.meta}>
-                {t('posts.author')}: {item.authorName}
-              </Text>
-            ) : null}
-            <Text style={styles.body} numberOfLines={2}>
-              {item.body}
-            </Text>
+            <View style={styles.cardContent}>
+              <View style={styles.cardText}>
+                <Text style={styles.title}>{item.title}</Text>
+                {item.authorName ? (
+                  <Text style={styles.meta}>
+                    {t('posts.author')}: {item.authorName}
+                  </Text>
+                ) : null}
+                <Text style={styles.body} numberOfLines={2}>
+                  {item.body}
+                </Text>
+              </View>
+
+              {item.imageUri ? (
+                <Image source={{uri: item.imageUri}} style={styles.thumb} />
+              ) : null}
+            </View>
           </TouchableOpacity>
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -89,6 +98,20 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: '#fff',
     marginTop: -2,
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardText: {
+    flex: 1,
+    marginRight: 8,
+  },
+  thumb: {
+    width: 60,
+    height: 60,
+    borderRadius: 6,
+    backgroundColor: '#ddd',
   },
 });
 
