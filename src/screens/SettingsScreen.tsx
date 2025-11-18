@@ -1,99 +1,77 @@
-import React, {useCallback} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, FlatList} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
+import React, {useLayoutEffect} from 'react';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {RootState, AppDispatch} from '@/state/store';
-import {setLanguage} from '@/state/settings/settingsSlice';
-import i18n, {AppLanguage, SUPPORTED_LANGUAGES} from '@/i18n';
+import {useNavigation} from '@react-navigation/native';
 
-type LanguageItem = {
-  code: AppLanguage;
-  label: string;
-};
-
-const LANG_LABELS: Record<AppLanguage, string> = {
-  fr: 'Français',
-  en: 'English',
-  de: 'Deutsch',
-};
+const languageOptions = [
+  {code: 'fr', key: 'settings.languages.fr'},
+  {code: 'en', key: 'settings.languages.en'},
+  {code: 'de', key: 'settings.languages.de'},
+];
 
 const SettingsScreen: React.FC = () => {
-  const {t} = useTranslation();
-  const dispatch = useDispatch<AppDispatch>();
+  const {t, i18n} = useTranslation();
+  const navigation = useNavigation();
 
-  const currentLanguage = useSelector<RootState, AppLanguage>(
-    state => state.settings.language,
-  );
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: t('settings.title'),
+    });
+  }, [navigation, t]);
 
-  const languages: LanguageItem[] = SUPPORTED_LANGUAGES.map(code => ({
-    code,
-    label: LANG_LABELS[code],
-  }));
+  const current = i18n.language;
 
-  const handleLanguagePress = useCallback(
-    (code: AppLanguage) => {
-      dispatch(setLanguage(code));
-      i18n.changeLanguage(code);
-    },
-    [dispatch],
-  );
+  const handleChangeLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('settings.screenTitle')}</Text>
-      <Text style={styles.description}>
+      <Text style={styles.sectionTitle}>{t('settings.languageTitle')}</Text>
+      <Text style={styles.sectionSubtitle}>
         {t('settings.languageDescription')}
       </Text>
 
-      <FlatList
-        style={styles.list}
-        data={languages}
-        keyExtractor={item => item.code}
-        renderItem={({item}) => {
-          const selected = item.code === currentLanguage;
+      <View style={styles.list}>
+        {languageOptions.map(option => {
+          const isActive = current.startsWith(option.code);
           return (
             <TouchableOpacity
-              style={[styles.row, selected && styles.rowSelected]}
-              onPress={() => handleLanguagePress(item.code)}>
-              <Text style={styles.languageLabel}>{item.label}</Text>
-              <Text style={styles.radio}>{selected ? '●' : '○'}</Text>
+              key={option.code}
+              style={[styles.row, isActive && styles.rowActive]}
+              onPress={() => handleChangeLanguage(option.code)}>
+              <Text style={styles.rowLabel}>{t(option.key)}</Text>
+              {isActive && <Text style={styles.check}>✓</Text>}
             </TouchableOpacity>
           );
-        }}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 16, backgroundColor: '#fff'},
-  title: {fontSize: 20, fontWeight: '700', marginBottom: 8},
-  description: {fontSize: 14, color: '#555', marginBottom: 16},
+  container: {flex: 1, padding: 16, backgroundColor: 'white'},
+  sectionTitle: {fontSize: 16, fontWeight: '600', marginBottom: 4},
+  sectionSubtitle: {fontSize: 13, color: '#6b7280', marginBottom: 16},
   list: {marginTop: 8},
   row: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    marginBottom: 8,
     justifyContent: 'space-between',
   },
-  rowSelected: {
-    backgroundColor: '#dbeafe',
-    borderWidth: 1,
-    borderColor: '#2563EB',
+  rowActive: {
+    borderColor: '#2563eb',
+    backgroundColor: '#eff6ff',
   },
-  languageLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  radio: {
-    fontSize: 18,
-    color: '#2563EB',
-  },
-  separator: {height: 8},
+  rowLabel: {fontSize: 14},
+  check: {fontSize: 16, color: '#2563eb', fontWeight: '700'},
 });
 
 export default SettingsScreen;

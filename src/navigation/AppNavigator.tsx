@@ -1,60 +1,47 @@
-import * as React from 'react';
+// src/navigation/AppNavigator.tsx
+import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import PostsListScreen from '@/screens/PostsListScreen';
-import PostDetailScreen from '@/screens/PostDetailScreen';
-import CreatePostScreen from '@/screens/CreatePostScreen';
-import SettingsScreen from '@/screens/SettingsScreen';
+import PostsListScreen from '../screens/PostsListScreen';
+import CreatePostScreen from '../screens/CreatePostScreen';
+import PostDetailScreen from '../screens/PostDetailScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import {useTranslation} from 'react-i18next';
 
-export type RootStackParamList = {
-  Tabs: undefined;
-  PostDetail: {id: string};
-  CreatePost: undefined;
-};
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tabs = createBottomTabNavigator();
+const MainTabs = () => {
+  const {t} = useTranslation();
 
-function TabsNav() {
   return (
-    <Tabs.Navigator
-      screenOptions={{
-        headerTitleAlign: 'center',
-        lazy: true,
-        detachInactiveScreens: true,
-      }}>
-      <Tabs.Screen
-        name="Home"
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Feed"
         component={PostsListScreen}
-        options={{title: 'Posts'}}
+        options={{title: t('tabs.feed')}}
       />
-      <Tabs.Screen
+      <Tab.Screen
         name="Settings"
         component={SettingsScreen}
-        options={{title: 'Settings'}}
+        options={{title: t('tabs.settings')}}
       />
-    </Tabs.Navigator>
+    </Tab.Navigator>
   );
-}
+};
 
-export default function AppNavigator() {
+const AppNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Tabs"
-        component={TabsNav}
+        name="MainTabs"
+        component={MainTabs}
         options={{headerShown: false}}
       />
-      <Stack.Screen
-        name="PostDetail"
-        component={PostDetailScreen}
-        options={{title: 'Post'}}
-      />
-      <Stack.Screen
-        name="CreatePost"
-        component={CreatePostScreen}
-        options={{title: 'New Post'}}
-      />
+      <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
     </Stack.Navigator>
   );
-}
+};
+
+export default AppNavigator;

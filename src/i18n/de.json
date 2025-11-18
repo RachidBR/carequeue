@@ -1,33 +1,47 @@
 {
-  "app": {
-    "title": "CareQueue"
+  "appName": "CareQueue",
+  "tabs": {
+    "feed": "Übersicht",
+    "settings": "Einstellungen"
   },
-  "posts": {
-    "listTitle": "Mitteilungen",
-    "empty": "Noch keine Mitteilungen.",
-    "author": "Autor",
-    "createdAt": "Erstellt am"
+  "postsList": {
+    "title": "Mitteilungen",
+    "emptyTitle": "Noch keine Mitteilungen",
+    "emptySubtitle": "Erstelle deine erste Mitteilung für das Team.",
+    "fabLabel": "Neue Mitteilung"
+  },
+  "createPost": {
+    "title": "Neue Mitteilung",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "z.B. Teammeeting-Erinnerung",
+    "bodyLabel": "Inhalt",
+    "bodyPlaceholder": "Schreibe eine klare Nachricht für das Team…",
+    "chooseImage": "Aus Galerie",
+    "takePhoto": "Foto machen",
+    "removeImage": "Bild entfernen",
+    "save": "Veröffentlichen",
+    "saving": "Veröffentliche...",
+    "errors": {
+      "titleRequired": "Titel ist erforderlich.",
+      "bodyRequired": "Inhalt ist erforderlich."
+    }
   },
   "postDetail": {
-    "titleFallback": "Details",
-    "notFoundTitle": "Beitrag nicht gefunden",
-    "notFoundBody": "Er wurde vielleicht gelöscht oder ist nicht mehr verfügbar."
+    "title": "Mitteilungsdetails",
+    "createdAt": "Erstellt am {{date}}"
   },
-   "createPost": {
-    "screenTitle": "Neue Mitteilung",
-    "titleLabel": "Titel",
-    "bodyLabel": "Text",
-    "submit": "Veröffentlichen",
-    "titleRequired": "Titel ist erforderlich",
-    "bodyTooShort": "Text ist zu kurz",
-    "addImage": "Bild hinzufügen",
-    "takePhoto": "Foto aufnehmen",
-    "chooseFromLibrary": "Aus Galerie wählen",
-    "removeImage": "Bild entfernen"
+  "permissions": {
+    "cameraRequired": "Kamerazugriff ist erforderlich.",
+    "galleryRequired": "Galeriezugriff ist erforderlich."
   },
   "settings": {
-    "screenTitle": "Einstellungen",
-    "language": "Sprache",
-    "languageDescription": "Wähle die App-Sprache"
+    "title": "Einstellungen",
+    "languageTitle": "App-Sprache",
+    "languageDescription": "Wähle die Anzeigesprache.",
+    "languages": {
+      "fr": "Französisch",
+      "en": "Englisch",
+      "de": "Deutsch"
+    }
   }
 }

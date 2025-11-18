@@ -1,118 +1,93 @@
-import React from 'react';
-import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
-import {useSelector} from 'react-redux';
-import {RootState} from '@/state/store';
-import {Post} from '@/state/posts/types';
+import React, {useLayoutEffect} from 'react';
+import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {useSelector} from 'react-redux';
+import {RootState} from '../state/store';
 import {useTranslation} from 'react-i18next';
-import {Image} from 'react-native';
 
 const PostsListScreen: React.FC = () => {
+  const navigation = useNavigation();
   const {t} = useTranslation();
-  const navigation = useNavigation<any>();
-  const posts = useSelector<RootState, Post[]>(state => state.posts.items);
+  const posts = useSelector((state: RootState) => state.posts.items);
 
-  const handleCreatePress = () => {
-    navigation.navigate('CreatePost');
-  };
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: t('postsList.title'),
+    });
+  }, [navigation, t]);
+
+  const renderEmpty = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyTitle}>{t('postsList.emptyTitle')}</Text>
+      <Text style={styles.emptySubtitle}>{t('postsList.emptySubtitle')}</Text>
+    </View>
+  );
+
+  const renderItem = ({item}: any) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        navigation.navigate('PostDetail' as never, {id: item.id} as never)
+      }>
+      <Text style={styles.cardTitle}>{item.title}</Text>
+      <Text numberOfLines={2} style={styles.cardBody}>
+        {item.body}
+      </Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t('posts.listTitle')}</Text>
-
       <FlatList
         data={posts}
         keyExtractor={item => item.id}
-        renderItem={({item}) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              navigation.navigate('PostDetail', {postId: item.id})
-            }>
-            <View style={styles.cardContent}>
-              <View style={styles.cardText}>
-                <Text style={styles.title}>{item.title}</Text>
-                {item.authorName ? (
-                  <Text style={styles.meta}>
-                    {t('posts.author')}: {item.authorName}
-                  </Text>
-                ) : null}
-                <Text style={styles.body} numberOfLines={2}>
-                  {item.body}
-                </Text>
-              </View>
-
-              {item.imageUri ? (
-                <Image source={{uri: item.imageUri}} style={styles.thumb} />
-              ) : null}
-            </View>
-          </TouchableOpacity>
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={() => (
-          <Text style={styles.empty}>{t('posts.empty')}</Text>
-        )}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmpty}
+        contentContainerStyle={posts.length === 0 && styles.emptyListContent}
       />
 
-      <TouchableOpacity style={styles.fab} onPress={handleCreatePress}>
-        <Text style={styles.fabText}>＋</Text>
+      {/* Floating "New post" button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate('CreatePost' as never)}>
+        <Text style={styles.fabText}>{t('postsList.fabLabel')}</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 16, backgroundColor: '#fff'},
-  header: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 12,
+  container: {flex: 1, backgroundColor: '#f5f5f5'},
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
   },
+  emptyTitle: {fontSize: 18, fontWeight: '600', marginBottom: 8},
+  emptySubtitle: {fontSize: 14, color: '#555', textAlign: 'center'},
+  emptyListContent: {flexGrow: 1, justifyContent: 'center'},
   card: {
+    backgroundColor: 'white',
     padding: 16,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 12,
+    elevation: 2,
   },
-  title: {fontSize: 16, fontWeight: '600', marginBottom: 4},
-  meta: {fontSize: 12, color: '#777', marginBottom: 4},
-  body: {fontSize: 14, color: '#555'},
-  separator: {height: 12},
-  empty: {marginTop: 32, textAlign: 'center', color: '#777'},
+  cardTitle: {fontSize: 16, fontWeight: '600', marginBottom: 4},
+  cardBody: {fontSize: 14, color: '#555'},
   fab: {
     position: 'absolute',
-    right: 24,
+    right: 16,
     bottom: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#2563EB',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
     elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
   },
-  fabText: {
-    fontSize: 32,
-    color: '#fff',
-    marginTop: -2,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cardText: {
-    flex: 1,
-    marginRight: 8,
-  },
-  thumb: {
-    width: 60,
-    height: 60,
-    borderRadius: 6,
-    backgroundColor: '#ddd',
-  },
+  fabText: {color: 'white', fontWeight: '600'},
 });
 
 export default PostsListScreen;

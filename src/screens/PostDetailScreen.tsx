@@ -1,79 +1,72 @@
-import React, {useMemo} from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import React, {useLayoutEffect} from 'react';
+import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
-import {RootState} from '@/state/store';
-import {Post} from '@/state/posts/types';
+import {RootState} from '../state/store';
 import {useTranslation} from 'react-i18next';
+import {format} from 'date-fns';
 
-type RouteParams = {
-  postId: string;
+type RootStackParamList = {
+  PostDetail: {id: string};
 };
+
+type PostDetailRouteProp = RouteProp<RootStackParamList, 'PostDetail'>;
 
 const PostDetailScreen: React.FC = () => {
   const {t} = useTranslation();
-  const route = useRoute<any>();
-  const {postId} = route.params as RouteParams;
+  const navigation = useNavigation();
+  const route = useRoute<PostDetailRouteProp>();
 
-  const post = useSelector<RootState, Post | undefined>(state =>
-    state.posts.items.find(p => p.id === postId),
+  const post = useSelector((state: RootState) =>
+    state.posts.items.find(p => p.id === route.params.id),
   );
 
-  const createdAt = useMemo(() => {
-    if (!post?.createdAt) return '';
-    try {
-      return new Date(post.createdAt).toLocaleString();
-    } catch {
-      return post.createdAt;
-    }
-  }, [post?.createdAt]);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: t('postDetail.title'),
+    });
+  }, [navigation, t]);
 
   if (!post) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>{t('postDetail.notFoundTitle')}</Text>
-        <Text style={styles.body}>{t('postDetail.notFoundBody')}</Text>
+      <View style={styles.center}>
+        <Text>Post not found.</Text>
       </View>
     );
   }
 
-  return (
-    <View style={styles.container}>
-      {post.imageUri ? (
-        <Image source={{uri: post.imageUri}} style={styles.headerImage} />
-      ) : null}
-      <Text style={styles.title}>{post.title}</Text>
-      {post.authorName ? (
-        <Text style={styles.meta}>
-          {t('posts.author')}: {post.authorName}
-        </Text>
-      ) : null}
-      {createdAt ? (
-        <Text style={styles.meta}>
-          {t('posts.createdAt')}: {createdAt}
-        </Text>
-      ) : null}
+  const createdDate = format(new Date(post.createdAt), 'dd.MM.yyyy HH:mm');
 
-      <View style={styles.bodyWrapper}>
-        <Text style={styles.body}>{post.body}</Text>
-      </View>
-    </View>
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>{post.title}</Text>
+      <Text style={styles.meta}>
+        {t('postDetail.createdAt', {date: createdDate})}
+      </Text>
+
+      {post.imageUri && (
+        <Image source={{uri: post.imageUri}} style={styles.image} />
+      )}
+
+      <Text style={styles.body}>{post.body}</Text>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 16, backgroundColor: '#fff'},
+  container: {flex: 1, backgroundColor: 'white'},
+  content: {padding: 16},
+  center: {flex: 1, alignItems: 'center', justifyContent: 'center'},
   title: {fontSize: 20, fontWeight: '700', marginBottom: 8},
-  meta: {fontSize: 13, color: '#777'},
-  bodyWrapper: {marginTop: 16},
-  body: {fontSize: 15, lineHeight: 22, color: '#333'},
-  headerImage: {
+  meta: {fontSize: 12, color: '#6b7280', marginBottom: 16},
+  image: {
     width: '100%',
     height: 220,
     borderRadius: 12,
-    marginBottom: 12,
-    backgroundColor: '#eee',
+    marginBottom: 16,
+    backgroundColor: '#e5e7eb',
   },
+  body: {fontSize: 15, lineHeight: 22},
 });
 
 export default PostDetailScreen;

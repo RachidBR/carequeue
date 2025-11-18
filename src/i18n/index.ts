@@ -1,29 +1,30 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-const resources = {
-    fr: {
-        translation: require('./fr.json'),
-    },
-    en: {
-        translation: require('./en.json'),
-    },
-    de: {
-        translation: require('./de.json'),
-    },
-};
+import frCommon from './fr.json';
+import enCommon from './en.json';
+import deCommon from './de.json';
 
-i18n.use(initReactI18next).init({
-    compatibilityJSON: 'v3',
-    resources,
-    lng: 'fr', // default
-    fallbackLng: 'en',
-    interpolation: {
-        escapeValue: false, 
-    },
-});
+i18n
+    .use(initReactI18next)
+    .init({
+        compatibilityJSON: 'v3',
 
-export const SUPPORTED_LANGUAGES = ['fr', 'en', 'de'] as const;
-export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+        lng: 'fr',
+        fallbackLng: 'en',
+
+        resources: {
+            fr: { common: frCommon },
+            en: { common: enCommon },
+            de: { common: deCommon },
+        },
+
+        ns: ['common'],
+        defaultNS: 'common',
+
+        interpolation: {
+            escapeValue: false,
+        },
+    });
 
 export default i18n;

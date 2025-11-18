@@ -1,33 +1,47 @@
 {
-  "app": {
-    "title": "CareQueue"
+  "appName": "CareQueue",
+  "tabs": {
+    "feed": "Feed",
+    "settings": "Settings"
   },
-  "posts": {
-    "listTitle": "Announcements",
-    "empty": "No announcements yet.",
-    "author": "Author",
-    "createdAt": "Created at"
+  "postsList": {
+    "title": "Announcements",
+    "emptyTitle": "No announcements yet",
+    "emptySubtitle": "Create your first announcement for the team.",
+    "fabLabel": "New announcement"
+  },
+  "createPost": {
+    "title": "New announcement",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g. Team meeting reminder",
+    "bodyLabel": "Content",
+    "bodyPlaceholder": "Write a clear message for the team…",
+    "chooseImage": "From gallery",
+    "takePhoto": "Take a photo",
+    "removeImage": "Remove image",
+    "save": "Publish",
+    "saving": "Publishing...",
+    "errors": {
+      "titleRequired": "Title is required.",
+      "bodyRequired": "Content is required."
+    }
   },
   "postDetail": {
-    "titleFallback": "Post detail",
-    "notFoundTitle": "Post not found",
-    "notFoundBody": "It may have been removed or is no longer available."
+    "title": "Announcement details",
+    "createdAt": "Created on {{date}}"
   },
-    "createPost": {
-    "screenTitle": "New announcement",
-    "titleLabel": "Title",
-    "bodyLabel": "Body",
-    "submit": "Publish",
-    "titleRequired": "Title is required",
-    "bodyTooShort": "Body is too short",
-    "addImage": "Add image",
-    "takePhoto": "Take photo",
-    "chooseFromLibrary": "Choose from gallery",
-    "removeImage": "Remove image"
+  "permissions": {
+    "cameraRequired": "Camera permission is required.",
+    "galleryRequired": "Gallery permission is required."
   },
   "settings": {
-    "screenTitle": "Settings",
-    "language": "Language",
-    "languageDescription": "Choose the app language"
+    "title": "Settings",
+    "languageTitle": "App language",
+    "languageDescription": "Choose the display language.",
+    "languages": {
+      "fr": "French",
+      "en": "English",
+      "de": "German"
+    }
   }
 }

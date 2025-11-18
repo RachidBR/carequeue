@@ -1,44 +1,36 @@
-import React, {useState} from 'react';
+import React, {useLayoutEffect, useState} from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
-  Button,
+  StyleSheet,
   TouchableOpacity,
   Image,
   Alert,
   Platform,
 } from 'react-native';
-import {Formik} from 'formik';
-import * as Yup from 'yup';
-import {useDispatch} from 'react-redux';
-import {addPost} from '@/state/posts/postsSlice';
-import {AppDispatch} from '@/state/store';
 import {useNavigation} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-
-import {
-  launchCamera,
-  launchImageLibrary,
-  Asset,
-  ImageLibraryOptions,
-  CameraOptions,
-} from 'react-native-image-picker';
-
-import {PERMISSIONS, RESULTS, request} from 'react-native-permissions';
+import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { addPost } from '@/state/posts/postsSlice';
 
 const CreatePostScreen: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
   const {t} = useTranslation();
 
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const CreatePostSchema = Yup.object().shape({
-    title: Yup.string().trim().required(t('createPost.titleRequired')),
-    body: Yup.string().trim().min(5, t('createPost.bodyTooShort')),
-  });
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: t('createPost.title'),
+    });
+  }, [navigation, t]);
 
   const requestCameraPermission = async () => {
     const perm =
@@ -50,7 +42,7 @@ const CreatePostScreen: React.FC = () => {
     if (result === RESULTS.GRANTED) {
       return true;
     }
-    Alert.alert('Permission', 'Camera permission is required.');
+    Alert.alert(t('permissions.cameraRequired'));
     return false;
   };
 
@@ -64,7 +56,7 @@ const CreatePostScreen: React.FC = () => {
     if (result === RESULTS.GRANTED) {
       return true;
     }
-    Alert.alert('Permission', 'Gallery permission is required.');
+    Alert.alert(t('permissions.galleryRequired'));
     return false;
   };
 
@@ -74,212 +66,148 @@ const CreatePostScreen: React.FC = () => {
       return;
     }
 
-    const options: CameraOptions = {
+    const result = await launchCamera({
       mediaType: 'photo',
-      saveToPhotos: true,
-    };
+      quality: 0.8,
+    });
 
-    const result = await launchCamera(options);
-    if (result.didCancel) {
-      return;
-    }
-    if (result.errorMessage) {
-      Alert.alert('Error', result.errorMessage);
-      return;
-    }
-
-    const asset: Asset | undefined = result.assets?.[0];
-    if (asset?.uri) {
-      setImageUri(asset.uri);
+    if (result.assets && result.assets[0]?.uri) {
+      setImageUri(result.assets[0].uri);
     }
   };
 
-  const handlePickFromLibrary = async () => {
+  const handlePickFromGallery = async () => {
     const ok = await requestGalleryPermission();
     if (!ok) {
       return;
     }
 
-    const options: ImageLibraryOptions = {
+    const result = await launchImageLibrary({
       mediaType: 'photo',
-      selectionLimit: 1,
-    };
+      quality: 0.8,
+    });
 
-    const result = await launchImageLibrary(options);
-    if (result.didCancel) {
-      return;
-    }
-    if (result.errorMessage) {
-      Alert.alert('Error', result.errorMessage);
-      return;
-    }
-
-    const asset: Asset | undefined = result.assets?.[0];
-    if (asset?.uri) {
-      setImageUri(asset.uri);
+    if (result.assets && result.assets[0]?.uri) {
+      setImageUri(result.assets[0].uri);
     }
   };
 
-  const handleRemoveImage = () => {
-    setImageUri(null);
+  const handleSave = async () => {
+    if (!title.trim()) {
+      Alert.alert(t('createPost.errors.titleRequired'));
+      return;
+    }
+    if (!body.trim()) {
+      Alert.alert(t('createPost.errors.bodyRequired'));
+      return;
+    }
+
+    setSaving(true);
+
+    // for now, local-only: Redux
+    dispatch(
+      addPost({
+        id: Date.now().toString(),
+        title: title.trim(),
+        body: body.trim(),
+        imageUri,
+        createdAt: new Date().toISOString(),
+      }),
+    );
+
+    setSaving(false);
+    navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('createPost.screenTitle')}</Text>
+      <Text style={styles.label}>{t('createPost.titleLabel')}</Text>
+      <TextInput
+        style={styles.input}
+        value={title}
+        onChangeText={setTitle}
+        placeholder={t('createPost.titlePlaceholder')}
+      />
 
-      <Formik
-        initialValues={{title: '', body: ''}}
-        validationSchema={CreatePostSchema}
-        onSubmit={(values, helpers) => {
-          dispatch(
-            addPost({
-              title: values.title.trim(),
-              body: values.body.trim(),
-              imageUri,
-            }),
-          );
-          helpers.resetForm();
-          setImageUri(null);
-          navigation.goBack();
-        }}>
-        {({
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          values,
-          errors,
-          touched,
-        }) => (
-          <View style={styles.form}>
-            <Text style={styles.label}>{t('createPost.titleLabel')}</Text>
-            <TextInput
-              style={styles.input}
-              value={values.title}
-              onChangeText={handleChange('title')}
-              onBlur={handleBlur('title')}
-              placeholder={t('createPost.titleLabel')}
-            />
-            {touched.title && errors.title ? (
-              <Text style={styles.error}>{errors.title}</Text>
-            ) : null}
+      <Text style={styles.label}>{t('createPost.bodyLabel')}</Text>
+      <TextInput
+        style={[styles.input, styles.textArea]}
+        value={body}
+        onChangeText={setBody}
+        placeholder={t('createPost.bodyPlaceholder')}
+        multiline
+      />
 
-            <Text style={styles.label}>{t('createPost.bodyLabel')}</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={values.body}
-              onChangeText={handleChange('body')}
-              onBlur={handleBlur('body')}
-              placeholder={t('createPost.bodyLabel')}
-              multiline
-            />
-            {touched.body && errors.body ? (
-              <Text style={styles.error}>{errors.body}</Text>
-            ) : null}
+      <View style={styles.imageRow}>
+        <TouchableOpacity style={styles.button} onPress={handlePickFromGallery}>
+          <Text style={styles.buttonText}>{t('createPost.chooseImage')}</Text>
+        </TouchableOpacity>
 
-            {/* IMAGE PICKER SECTION */}
-            <View style={styles.imageSection}>
-              <Text style={styles.label}>{t('createPost.addImage')}</Text>
-              <View style={styles.imageButtonsRow}>
-                <TouchableOpacity
-                  style={styles.smallButton}
-                  onPress={handleTakePhoto}>
-                  <Text style={styles.smallButtonText}>
-                    {t('createPost.takePhoto')}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.smallButton}
-                  onPress={handlePickFromLibrary}>
-                  <Text style={styles.smallButtonText}>
-                    {t('createPost.chooseFromLibrary')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+        <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
+          <Text style={styles.buttonText}>{t('createPost.takePhoto')}</Text>
+        </TouchableOpacity>
+      </View>
 
-              {imageUri ? (
-                <View style={styles.previewWrapper}>
-                  <Image source={{uri: imageUri}} style={styles.previewImage} />
-                  <TouchableOpacity
-                    style={styles.removeImageButton}
-                    onPress={handleRemoveImage}>
-                    <Text style={styles.removeImageText}>
-                      {t('createPost.removeImage')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ) : null}
-            </View>
+      {imageUri && (
+        <View style={styles.previewContainer}>
+          <Image source={{uri: imageUri}} style={styles.preview} />
+          <TouchableOpacity
+            style={[styles.button, styles.removeButton]}
+            onPress={() => setImageUri(null)}>
+            <Text style={styles.removeButtonText}>
+              {t('createPost.removeImage')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
-            <View style={styles.buttonWrapper}>
-              <Button
-                title={t('createPost.submit')}
-                onPress={() => handleSubmit()}
-              />
-            </View>
-          </View>
-        )}
-      </Formik>
+      <TouchableOpacity
+        style={[styles.button, styles.saveButton]}
+        onPress={handleSave}
+        disabled={saving}>
+        <Text style={styles.saveButtonText}>
+          {saving ? t('createPost.saving') : t('createPost.save')}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 16, backgroundColor: '#fff'},
-  title: {fontSize: 20, fontWeight: '700', marginBottom: 16},
-  form: {gap: 12},
-  label: {fontSize: 14, fontWeight: '500'},
+  container: {flex: 1, padding: 16, backgroundColor: 'white'},
+  label: {fontSize: 14, fontWeight: '500', marginBottom: 4},
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ddd',
     borderRadius: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
-    backgroundColor: '#fafafa',
+    marginBottom: 12,
   },
   textArea: {
     height: 120,
     textAlignVertical: 'top',
   },
-  error: {fontSize: 12, color: 'red'},
-  buttonWrapper: {marginTop: 16},
-  imageSection: {marginTop: 8},
-  imageButtonsRow: {
+  imageRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 4,
+    marginBottom: 12,
   },
-  smallButton: {
+  button: {
     flex: 1,
-    backgroundColor: '#2563EB',
-    paddingVertical: 8,
+    backgroundColor: '#e5e7eb',
+    paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
-  smallButtonText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  previewWrapper: {
-    marginTop: 12,
-    alignItems: 'flex-start',
-    gap: 6,
-  },
-  previewImage: {
-    width: 140,
-    height: 140,
-    borderRadius: 8,
-  },
-  removeImageButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  removeImageText: {
-    color: '#DC2626',
-    fontSize: 13,
-  },
+  buttonText: {fontSize: 14, fontWeight: '500'},
+  previewContainer: {alignItems: 'center', marginBottom: 16},
+  preview: {width: '100%', height: 200, borderRadius: 12, marginBottom: 8},
+  removeButton: {backgroundColor: '#fee2e2'},
+  removeButtonText: {color: '#b91c1c', fontWeight: '600'},
+  saveButton: {backgroundColor: '#2563eb', marginTop: 8},
+  saveButtonText: {color: 'white', fontWeight: '600'},
 });
 
 export default CreatePostScreen;

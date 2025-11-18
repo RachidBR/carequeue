@@ -1,33 +1,47 @@
 {
-  "app": {
-    "title": "CareQueue"
+  "appName": "CareQueue",
+  "tabs": {
+    "feed": "Fil d’actualités",
+    "settings": "Paramètres"
   },
-  "posts": {
-    "listTitle": "Annonces",
-    "empty": "Aucune annonce pour le moment.",
-    "author": "Auteur",
-    "createdAt": "Créé le"
+  "postsList": {
+    "title": "Annonces",
+    "emptyTitle": "Aucune annonce pour le moment",
+    "emptySubtitle": "Crée ta première annonce pour l’équipe.",
+    "fabLabel": "Nouvelle annonce"
+  },
+  "createPost": {
+    "title": "Nouvelle annonce",
+    "titleLabel": "Titre",
+    "titlePlaceholder": "Ex: Rappel réunion équipe",
+    "bodyLabel": "Contenu",
+    "bodyPlaceholder": "Détaille clairement le message pour l’équipe…",
+    "chooseImage": "Depuis la galerie",
+    "takePhoto": "Prendre une photo",
+    "removeImage": "Retirer l’image",
+    "save": "Publier",
+    "saving": "Publication...",
+    "errors": {
+      "titleRequired": "Le titre est obligatoire.",
+      "bodyRequired": "Le contenu est obligatoire."
+    }
   },
   "postDetail": {
-    "titleFallback": "Détail de l'annonce",
-    "notFoundTitle": "Annonce introuvable",
-    "notFoundBody": "Elle a peut-être été supprimée ou n'est plus disponible."
+    "title": "Détail de l’annonce",
+    "createdAt": "Créé le {{date}}"
   },
-   "createPost": {
-    "screenTitle": "Nouvelle annonce",
-    "titleLabel": "Titre",
-    "bodyLabel": "Contenu",
-    "submit": "Publier",
-    "titleRequired": "Le titre est obligatoire",
-    "bodyTooShort": "Le contenu est trop court",
-    "addImage": "Ajouter une image",
-    "takePhoto": "Prendre une photo",
-    "chooseFromLibrary": "Choisir dans la galerie",
-    "removeImage": "Supprimer l'image"
+  "permissions": {
+    "cameraRequired": "L’accès à la caméra est nécessaire.",
+    "galleryRequired": "L’accès à la galerie est nécessaire."
   },
   "settings": {
-    "screenTitle": "Paramètres",
-    "language": "Langue",
-    "languageDescription": "Choisissez la langue de l'application"
+    "title": "Paramètres",
+    "languageTitle": "Langue de l’application",
+    "languageDescription": "Choisis la langue d’affichage.",
+    "languages": {
+      "fr": "Français",
+      "en": "Anglais",
+      "de": "Allemand"
+    }
   }
 }
