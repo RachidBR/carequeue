@@ -1,7 +1,29 @@
 {
-  "app.name": "CareQueue",
-  "posts.title": "Publications",
-  "posts.create": "Créer",
-  "settings.title": "Paramètres",
-  "settings.language": "Langue"
+  "app": {
+    "title": "CareQueue"
+  },
+  "posts": {
+    "listTitle": "Annonces",
+    "empty": "Aucune annonce pour le moment.",
+    "author": "Auteur",
+    "createdAt": "Créé le"
+  },
+  "postDetail": {
+    "titleFallback": "Détail de l'annonce",
+    "notFoundTitle": "Annonce introuvable",
+    "notFoundBody": "Elle a peut-être été supprimée ou n'est plus disponible."
+  },
+  "createPost": {
+    "screenTitle": "Nouvelle annonce",
+    "titleLabel": "Titre",
+    "bodyLabel": "Contenu",
+    "submit": "Publier",
+    "titleRequired": "Le titre est obligatoire",
+    "bodyTooShort": "Le contenu est trop court"
+  },
+  "settings": {
+    "screenTitle": "Paramètres",
+    "language": "Langue",
+    "languageDescription": "Choisissez la langue de l'application"
+  }
 }

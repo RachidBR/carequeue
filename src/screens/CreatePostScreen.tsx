@@ -1,5 +1,4 @@
-// TODO: upload image to Firebase Storage → get URL
-// TODO: save Firestore doc { text: v.text, imageUrl import React from 'react';
+import React from 'react';
 import {View, Text, StyleSheet, TextInput, Button} from 'react-native';
 import {Formik} from 'formik';
 import * as Yup from 'yup';
@@ -7,19 +6,21 @@ import {useDispatch} from 'react-redux';
 import {addPost} from '@/state/posts/postsSlice';
 import {AppDispatch} from '@/state/store';
 import {useNavigation} from '@react-navigation/native';
-
-const CreatePostSchema = Yup.object().shape({
-  title: Yup.string().trim().required('Title is required'),
-  body: Yup.string().trim().min(5, 'Body is too short'),
-});
+import {useTranslation} from 'react-i18next';
 
 const CreatePostScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<any>();
+  const {t} = useTranslation();
+
+  const CreatePostSchema = Yup.object().shape({
+    title: Yup.string().trim().required(t('createPost.titleRequired')),
+    body: Yup.string().trim().min(5, t('createPost.bodyTooShort')),
+  });
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Post</Text>
+      <Text style={styles.title}>{t('createPost.screenTitle')}</Text>
 
       <Formik
         initialValues={{title: '', body: ''}}
@@ -43,35 +44,36 @@ const CreatePostScreen: React.FC = () => {
           touched,
         }) => (
           <View style={styles.form}>
-            <Text style={styles.label}>Title</Text>
+            <Text style={styles.label}>{t('createPost.titleLabel')}</Text>
             <TextInput
               style={styles.input}
               value={values.title}
               onChangeText={handleChange('title')}
               onBlur={handleBlur('title')}
-              placeholder="Enter a clear title"
+              placeholder={t('createPost.titleLabel')}
             />
             {touched.title && errors.title ? (
               <Text style={styles.error}>{errors.title}</Text>
             ) : null}
 
-            <Text style={styles.label}>Body</Text>
+            <Text style={styles.label}>{t('createPost.bodyLabel')}</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               value={values.body}
               onChangeText={handleChange('body')}
               onBlur={handleBlur('body')}
-              placeholder="Write the content of the post..."
+              placeholder={t('createPost.bodyLabel')}
               multiline
             />
             {touched.body && errors.body ? (
               <Text style={styles.error}>{errors.body}</Text>
             ) : null}
 
-            {/* Later: add image picker section here */}
-
             <View style={styles.buttonWrapper}>
-              <Button title="Publish" onPress={() => handleSubmit()} />
+              <Button
+                title={t('createPost.submit')}
+                onPress={() => handleSubmit()}
+              />
             </View>
           </View>
         )}

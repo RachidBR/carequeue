@@ -1,7 +1,29 @@
 {
-  "app.name": "CareQueue",
-  "posts.title": "Posts",
-  "posts.create": "Create",
-  "settings.title": "Settings",
-  "settings.language": "Language"
+  "app": {
+    "title": "CareQueue"
+  },
+  "posts": {
+    "listTitle": "Announcements",
+    "empty": "No announcements yet.",
+    "author": "Author",
+    "createdAt": "Created at"
+  },
+  "postDetail": {
+    "titleFallback": "Post detail",
+    "notFoundTitle": "Post not found",
+    "notFoundBody": "It may have been removed or is no longer available."
+  },
+  "createPost": {
+    "screenTitle": "New announcement",
+    "titleLabel": "Title",
+    "bodyLabel": "Body",
+    "submit": "Publish",
+    "titleRequired": "Title is required",
+    "bodyTooShort": "Body is too short"
+  },
+  "settings": {
+    "screenTitle": "Settings",
+    "language": "Language",
+    "languageDescription": "Choose the app language"
+  }
 }
