@@ -4,12 +4,14 @@ import {useRoute} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
 import {RootState} from '@/state/store';
 import {Post} from '@/state/posts/types';
+import {useTranslation} from 'react-i18next';
 
 type RouteParams = {
   postId: string;
 };
 
 const PostDetailScreen: React.FC = () => {
+  const {t} = useTranslation();
   const route = useRoute<any>();
   const {postId} = route.params as RouteParams;
 
@@ -29,7 +31,8 @@ const PostDetailScreen: React.FC = () => {
   if (!post) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Post not found</Text>
+        <Text style={styles.title}>{t('postDetail.notFoundTitle')}</Text>
+        <Text style={styles.body}>{t('postDetail.notFoundBody')}</Text>
       </View>
     );
   }
@@ -38,19 +41,19 @@ const PostDetailScreen: React.FC = () => {
     <View style={styles.container}>
       <Text style={styles.title}>{post.title}</Text>
       {post.authorName ? (
-        <Text style={styles.meta}>👤 {post.authorName}</Text>
+        <Text style={styles.meta}>
+          {t('posts.author')}: {post.authorName}
+        </Text>
       ) : null}
-      {createdAt ? <Text style={styles.meta}>🕒 {createdAt}</Text> : null}
+      {createdAt ? (
+        <Text style={styles.meta}>
+          {t('posts.createdAt')}: {createdAt}
+        </Text>
+      ) : null}
 
       <View style={styles.bodyWrapper}>
         <Text style={styles.body}>{post.body}</Text>
       </View>
-
-      {post.imageUrl ? (
-        <Text style={styles.imageHint}>
-          (Later: display image from {post.imageUrl})
-        </Text>
-      ) : null}
     </View>
   );
 };
@@ -61,7 +64,6 @@ const styles = StyleSheet.create({
   meta: {fontSize: 13, color: '#777'},
   bodyWrapper: {marginTop: 16},
   body: {fontSize: 15, lineHeight: 22, color: '#333'},
-  imageHint: {marginTop: 16, fontSize: 13, color: '#999'},
 });
 
 export default PostDetailScreen;

@@ -4,17 +4,21 @@ import {useSelector} from 'react-redux';
 import {RootState} from '@/state/store';
 import {Post} from '@/state/posts/types';
 import {useNavigation} from '@react-navigation/native';
+import {useTranslation} from 'react-i18next';
 
 const PostsListScreen: React.FC = () => {
+  const {t} = useTranslation();
   const navigation = useNavigation<any>();
   const posts = useSelector<RootState, Post[]>(state => state.posts.items);
 
   const handleCreatePress = () => {
-    navigation.navigate('CreatePost'); // 👈 make sure this route exists in AppNavigator
+    navigation.navigate('CreatePost');
   };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>{t('posts.listTitle')}</Text>
+
       <FlatList
         data={posts}
         keyExtractor={item => item.id}
@@ -26,7 +30,9 @@ const PostsListScreen: React.FC = () => {
             }>
             <Text style={styles.title}>{item.title}</Text>
             {item.authorName ? (
-              <Text style={styles.meta}>👤 {item.authorName}</Text>
+              <Text style={styles.meta}>
+                {t('posts.author')}: {item.authorName}
+              </Text>
             ) : null}
             <Text style={styles.body} numberOfLines={2}>
               {item.body}
@@ -34,9 +40,11 @@ const PostsListScreen: React.FC = () => {
           </TouchableOpacity>
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListEmptyComponent={() => (
+          <Text style={styles.empty}>{t('posts.empty')}</Text>
+        )}
       />
 
-      {/* Floating "+" button */}
       <TouchableOpacity style={styles.fab} onPress={handleCreatePress}>
         <Text style={styles.fabText}>＋</Text>
       </TouchableOpacity>
@@ -46,6 +54,11 @@ const PostsListScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1, padding: 16, backgroundColor: '#fff'},
+  header: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
   card: {
     padding: 16,
     borderRadius: 8,
@@ -55,6 +68,7 @@ const styles = StyleSheet.create({
   meta: {fontSize: 12, color: '#777', marginBottom: 4},
   body: {fontSize: 14, color: '#555'},
   separator: {height: 12},
+  empty: {marginTop: 32, textAlign: 'center', color: '#777'},
   fab: {
     position: 'absolute',
     right: 24,
