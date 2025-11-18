@@ -1,30 +1,22 @@
-import { createSlice, PayloadAction, nanoid } from '@reduxjs/toolkit';
-import { Post, PostsState } from './types';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import uuid from 'react-native-uuid';
+import { Post } from './types';
+
+
+type PostsState = {
+    items: Post[];
+};
 
 const initialState: PostsState = {
-    items: [
-        {
-            id: '1',
-            title: 'Bienvenue sur CareQueue',
-            body: "Ceci est un post de démo. Plus tard, ça viendra de Firestore 😉",
-            createdAt: new Date().toISOString(),
-            authorName: 'Admin',
-        },
-        {
-            id: '2',
-            title: 'Deuxième post',
-            body: 'On utilise Redux pour gérer la liste en local pour le moment.',
-            createdAt: new Date().toISOString(),
-            authorName: 'Admin',
-        },
-    ],
+    items: [],
 };
+
 
 type AddPostPayload = {
     title: string;
     body: string;
-    imageUrl?: string | null;
     authorName?: string;
+    imageUri?: string | null;
 };
 
 const postsSlice = createSlice({
@@ -32,16 +24,16 @@ const postsSlice = createSlice({
     initialState,
     reducers: {
         addPost: (state, action: PayloadAction<AddPostPayload>) => {
-            const { title, body, imageUrl, authorName } = action.payload;
+            const { title, body, authorName, imageUri } = action.payload;
             const newPost: Post = {
-                id: nanoid(),
+                id: String(uuid.v4()),
                 title,
                 body,
-                imageUrl: imageUrl ?? null,
-                authorName: authorName ?? 'You',
+                authorName: authorName ?? 'Infirmier·e',
                 createdAt: new Date().toISOString(),
+                imageUri: imageUri ?? null,
             };
-            state.items.unshift(newPost); // new post at the top
+            state.items.unshift(newPost); // newest first
         },
         updatePost: (
             state,

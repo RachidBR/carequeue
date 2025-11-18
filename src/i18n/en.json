@@ -13,13 +13,17 @@
     "notFoundTitle": "Post not found",
     "notFoundBody": "It may have been removed or is no longer available."
   },
-  "createPost": {
+    "createPost": {
     "screenTitle": "New announcement",
     "titleLabel": "Title",
     "bodyLabel": "Body",
     "submit": "Publish",
     "titleRequired": "Title is required",
-    "bodyTooShort": "Body is too short"
+    "bodyTooShort": "Body is too short",
+    "addImage": "Add image",
+    "takePhoto": "Take photo",
+    "chooseFromLibrary": "Choose from gallery",
+    "removeImage": "Remove image"
   },
   "settings": {
     "screenTitle": "Settings",

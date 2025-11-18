@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Image} from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
 import {RootState} from '@/state/store';
@@ -39,6 +39,9 @@ const PostDetailScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      {post.imageUri ? (
+        <Image source={{uri: post.imageUri}} style={styles.headerImage} />
+      ) : null}
       <Text style={styles.title}>{post.title}</Text>
       {post.authorName ? (
         <Text style={styles.meta}>
@@ -64,6 +67,13 @@ const styles = StyleSheet.create({
   meta: {fontSize: 13, color: '#777'},
   bodyWrapper: {marginTop: 16},
   body: {fontSize: 15, lineHeight: 22, color: '#333'},
+  headerImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: '#eee',
+  },
 });
 
 export default PostDetailScreen;
