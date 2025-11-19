@@ -42,7 +42,6 @@ function PostsStackNavigator() {
   );
 }
 
-// Bottom tabs
 function MainTabs() {
   return (
     <Tabs.Navigator>
