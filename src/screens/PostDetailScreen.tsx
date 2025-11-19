@@ -1,25 +1,35 @@
-import React, {useLayoutEffect} from 'react';
-import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+} from 'react-native';
+import {useRoute, RouteProp, useNavigation} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
-import {RootState} from '../state/store';
+import firestore from '@react-native-firebase/firestore';
 import {useTranslation} from 'react-i18next';
-import {format} from 'date-fns';
 
-type RootStackParamList = {
-  PostDetail: {id: string};
-};
+import {RootState} from '../state/store';
+import {Post} from '../state/posts/types';
+import { PostsStackParamList } from '@/types/navigation';
 
-type PostDetailRouteProp = RouteProp<RootStackParamList, 'PostDetail'>;
+type DetailRoute = RouteProp<PostsStackParamList, 'PostDetail'>;
 
 const PostDetailScreen: React.FC = () => {
-  const {t} = useTranslation();
+  const route = useRoute<DetailRoute>();
   const navigation = useNavigation();
-  const route = useRoute<PostDetailRouteProp>();
+  const {t} = useTranslation();
+  const {id} = route.params;
 
-  const post = useSelector((state: RootState) =>
-    state.posts.items.find(p => p.id === route.params.id),
+  const postFromStore = useSelector((state: RootState) =>
+    state.posts.items.find(p => p.id === id),
   );
+
+  const [post, setPost] = useState<Post | null>(postFromStore ?? null);
+  const [loading, setLoading] = useState(!postFromStore);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -27,46 +37,75 @@ const PostDetailScreen: React.FC = () => {
     });
   }, [navigation, t]);
 
-  if (!post) {
+  // If the post isn’t in Redux (e.g. cold start via deep link), fetch from Firestore
+  useEffect(() => {
+    if (postFromStore) return;
+
+    const fetch = async () => {
+      try {
+        const doc = await firestore().collection('posts').doc(id).get();
+        if (doc.exists) {
+          const raw = doc.data()!;
+          setPost({
+            id,
+            title: (raw.title as string) ?? '',
+            body: (raw.body as string) ?? '',
+            imageUrl: (raw.imageUrl as string | null) ?? null,
+            createdAt: (raw.createdAt as string) ?? '',
+          });
+        } else {
+          setPost(null);
+        }
+      } catch (e) {
+        console.error(e);
+        setPost(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetch();
+  }, [id, postFromStore]);
+
+  if (loading) {
     return (
       <View style={styles.center}>
-        <Text>Post not found.</Text>
+        <ActivityIndicator />
       </View>
     );
   }
 
-  const createdDate = format(new Date(post.createdAt), 'dd.MM.yyyy HH:mm');
+  if (!post) {
+    return (
+      <View style={styles.center}>
+        <Text>{t('postDetail.notFound')}</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{post.title}</Text>
-      <Text style={styles.meta}>
-        {t('postDetail.createdAt', {date: createdDate})}
-      </Text>
-
-      {post.imageUri && (
-        <Image source={{uri: post.imageUri}} style={styles.image} />
-      )}
-
+      {post.imageUrl ? (
+        <Image source={{uri: post.imageUrl}} style={styles.image} />
+      ) : null}
       <Text style={styles.body}>{post.body}</Text>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: 'white'},
-  content: {padding: 16},
   center: {flex: 1, alignItems: 'center', justifyContent: 'center'},
-  title: {fontSize: 20, fontWeight: '700', marginBottom: 8},
-  meta: {fontSize: 12, color: '#6b7280', marginBottom: 16},
+  container: {padding: 16},
+  title: {fontSize: 20, fontWeight: '700', marginBottom: 12},
   image: {
     width: '100%',
     height: 220,
     borderRadius: 12,
-    marginBottom: 16,
-    backgroundColor: '#e5e7eb',
+    marginBottom: 12,
+    backgroundColor: '#e5e5e5',
   },
-  body: {fontSize: 15, lineHeight: 22},
+  body: {fontSize: 16, lineHeight: 22},
 });
 
 export default PostDetailScreen;

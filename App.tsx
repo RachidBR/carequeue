@@ -6,9 +6,7 @@ import {store} from './src/state/store';
 import AppNavigator from './src/navigation/AppNavigator';
 import linking from './src/navigation/linking';
 import './src/i18n';
-import {initFirebase} from './src/services/firebase';
 
-// initFirebase();
 
 export default function App() {
   return (

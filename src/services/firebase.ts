@@ -1,17 +1,12 @@
-import {  initializeApp } from '@react-native-firebase/app';
-import messaging from '@react-native-firebase/messaging';
+import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 
-let app = null;
+// Collection helper (so we don’t repeat the string everywhere)
+export const postsCollection = () => firestore().collection('posts');
 
+// Optional: helper to get a new post ref with an ID
+export const newPostDoc = () => postsCollection().doc();
 
-export const initFirebase = () => {
-    // if (app) return app;
-    // // Place your Firebase config in native files (GoogleService-Info.plist / google-services.json)
-    // // JS initializeApp() will use them automatically with RNFB.
-    // app =  initializeApp();
-
-
-    // // Optional: iOS permission prompt deferred to Notifee step
-    // messaging().setAutoInitEnabled(true);
-    // return app;
-};
+// Storage path for post images
+export const postImageRef = (postId: string) =>
+    storage().ref(`postImages/${postId}.jpg`);

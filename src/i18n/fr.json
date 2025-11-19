@@ -24,7 +24,9 @@
     "errors": {
       "titleRequired": "Le titre est obligatoire.",
       "bodyRequired": "Le contenu est obligatoire."
-    }
+    },
+    "imageUploadFailedTitle": "Image non enregistrée",
+    "imageUploadFailedMessage": "Le message a été enregistré mais sans image."
   },
   "postDetail": {
     "title": "Détail de l’annonce",
@@ -42,6 +44,10 @@
       "fr": "Français",
       "en": "Anglais",
       "de": "Allemand"
+    },
+    "postDetail": {
+      "title": "Détail du post",
+      "notFound": "Post introuvable."
     }
   }
 }

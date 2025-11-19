@@ -1,17 +1,27 @@
-import { LinkingOptions } from '@react-navigation/native';
-import type { RootStackParamList } from './AppNavigator';
-
+// src/navigation/linking.ts
+import { RootStackParamList } from '@/types/navigation';
+import type { LinkingOptions } from '@react-navigation/native';
 
 const linking: LinkingOptions<RootStackParamList> = {
-    prefixes: ['carequeue://'],
+    // later we’ll match this to your real app scheme + website
+    prefixes: ['carequeue://', 'https://carequeue.app'],
+
     config: {
         screens: {
-            Tabs: 'tabs',
-            PostDetail: 'post/:id',
-            CreatePost: 'create',
+            MainTabs: {
+                screens: {
+                    PostsTab: {
+                        screens: {
+                            PostsList: 'posts',
+                            PostDetail: 'posts/:id',
+                            CreatePost: 'posts/new',
+                        },
+                    },
+                    SettingsTab: 'settings',
+                },
+            },
         },
     },
 };
-
 
 export default linking;

@@ -10,15 +10,14 @@ import {
   Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import { addPost } from '@/state/posts/postsSlice';
+import firestore from '@react-native-firebase/firestore';
+
 
 const CreatePostScreen: React.FC = () => {
   const navigation = useNavigation();
-  const dispatch = useDispatch();
   const {t} = useTranslation();
 
   const [title, setTitle] = useState('');
@@ -102,21 +101,28 @@ const CreatePostScreen: React.FC = () => {
       return;
     }
 
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    // for now, local-only: Redux
-    dispatch(
-      addPost({
-        id: Date.now().toString(),
+      const docRef = firestore().collection('posts').doc();
+      const postId = docRef.id;
+      const createdAt = new Date().toISOString();
+
+      await docRef.set({
+        id: postId,
         title: title.trim(),
         body: body.trim(),
-        imageUri,
-        createdAt: new Date().toISOString(),
-      }),
-    );
+        imageUrl: null, 
+        createdAt,
+      });
 
-    setSaving(false);
-    navigation.goBack();
+      navigation.goBack();
+    } catch (e) {
+      console.error(e);
+      Alert.alert('Error', 'Failed to save post.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -139,11 +145,15 @@ const CreatePostScreen: React.FC = () => {
       />
 
       <View style={styles.imageRow}>
-        <TouchableOpacity style={styles.button} onPress={handlePickFromGallery}>
+        <TouchableOpacity
+          style={[styles.buttonBase, styles.rowButton]}
+          onPress={handlePickFromGallery}>
           <Text style={styles.buttonText}>{t('createPost.chooseImage')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
+        <TouchableOpacity
+          style={[styles.buttonBase, styles.rowButton]}
+          onPress={handleTakePhoto}>
           <Text style={styles.buttonText}>{t('createPost.takePhoto')}</Text>
         </TouchableOpacity>
       </View>
@@ -152,7 +162,7 @@ const CreatePostScreen: React.FC = () => {
         <View style={styles.previewContainer}>
           <Image source={{uri: imageUri}} style={styles.preview} />
           <TouchableOpacity
-            style={[styles.button, styles.removeButton]}
+            style={[styles.saveButton, styles.removeButton]}
             onPress={() => setImageUri(null)}>
             <Text style={styles.removeButtonText}>
               {t('createPost.removeImage')}
@@ -162,7 +172,7 @@ const CreatePostScreen: React.FC = () => {
       )}
 
       <TouchableOpacity
-        style={[styles.button, styles.saveButton]}
+        style={styles.saveButton}
         onPress={handleSave}
         disabled={saving}>
         <Text style={styles.saveButtonText}>
@@ -172,7 +182,6 @@ const CreatePostScreen: React.FC = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {flex: 1, padding: 16, backgroundColor: 'white'},
   label: {fontSize: 14, fontWeight: '500', marginBottom: 4},
@@ -189,24 +198,38 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
   },
+
   imageRow: {
     flexDirection: 'row',
     gap: 8,
     marginBottom: 12,
   },
-  button: {
-    flex: 1,
+
+  buttonBase: {
     backgroundColor: '#e5e7eb',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
+
+  rowButton: {
+    flex: 1,
+  },
+
   buttonText: {fontSize: 14, fontWeight: '500'},
+
   previewContainer: {alignItems: 'center', marginBottom: 16},
   preview: {width: '100%', height: 200, borderRadius: 12, marginBottom: 8},
   removeButton: {backgroundColor: '#fee2e2'},
   removeButtonText: {color: '#b91c1c', fontWeight: '600'},
-  saveButton: {backgroundColor: '#2563eb', marginTop: 8},
+
+  saveButton: {
+    marginTop: 8,
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
   saveButtonText: {color: 'white', fontWeight: '600'},
 });
 

@@ -1,13 +1,24 @@
-import React, {useLayoutEffect} from 'react';
+// src/screens/PostsListScreen.tsx
+import React, {useEffect, useLayoutEffect} from 'react';
 import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {useSelector} from 'react-redux';
-import {RootState} from '../state/store';
+import {useSelector, useDispatch} from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
 import {useTranslation} from 'react-i18next';
 
+import {RootState} from '../state/store';
+import {setPosts} from '../state/posts/postsSlice';
+import {Post} from '../state/posts/types';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { PostsStackParamList } from '@/types/navigation';
+
+type Nav = NativeStackNavigationProp<PostsStackParamList, 'PostsList'>;
+
 const PostsListScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Nav>();
   const {t} = useTranslation();
+  const dispatch = useDispatch();
+
   const posts = useSelector((state: RootState) => state.posts.items);
 
   useLayoutEffect(() => {
@@ -16,6 +27,27 @@ const PostsListScreen: React.FC = () => {
     });
   }, [navigation, t]);
 
+  useEffect(() => {
+    const unsubscribe = firestore()
+      .collection('posts')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(snapshot => {
+        const data: Post[] = snapshot.docs.map(doc => {
+          const raw = doc.data();
+          return {
+            id: (raw.id as string) ?? doc.id,
+            title: (raw.title as string) ?? '',
+            body: (raw.body as string) ?? '',
+            imageUrl: (raw.imageUrl as string | null) ?? null,
+            createdAt: (raw.createdAt as string) ?? new Date().toISOString(),
+          };
+        });
+        dispatch(setPosts(data));
+      });
+
+    return () => unsubscribe();
+  }, [dispatch]);
+
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyTitle}>{t('postsList.emptyTitle')}</Text>
@@ -23,12 +55,10 @@ const PostsListScreen: React.FC = () => {
     </View>
   );
 
-  const renderItem = ({item}: any) => (
+  const renderItem = ({item}: {item: Post}) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() =>
-        navigation.navigate('PostDetail' as never, {id: item.id} as never)
-      }>
+      onPress={() => navigation.navigate('PostDetail', {id: item.id})}>
       <Text style={styles.cardTitle}>{item.title}</Text>
       <Text numberOfLines={2} style={styles.cardBody}>
         {item.body}
@@ -49,7 +79,7 @@ const PostsListScreen: React.FC = () => {
       {/* Floating "New post" button */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate('CreatePost' as never)}>
+        onPress={() => navigation.navigate('CreatePost')}>
         <Text style={styles.fabText}>{t('postsList.fabLabel')}</Text>
       </TouchableOpacity>
     </View>
