@@ -1,13 +1,27 @@
-import React, {useLayoutEffect} from 'react';
+// src/screens/PostsListScreen.tsx
+import React, {useEffect, useLayoutEffect} from 'react';
 import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
 import {RootState} from '../state/store';
 import {useTranslation} from 'react-i18next';
+
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+} from '@react-native-firebase/firestore';
+
+import {Post} from '@/state/posts/types';
+import {setPosts} from '@/state/posts/postsSlice';
 
 const PostsListScreen: React.FC = () => {
   const navigation = useNavigation();
   const {t} = useTranslation();
+  const dispatch = useDispatch();
+
   const posts = useSelector((state: RootState) => state.posts.items);
 
   useLayoutEffect(() => {
@@ -16,6 +30,30 @@ const PostsListScreen: React.FC = () => {
     });
   }, [navigation, t]);
 
+  useEffect(() => {
+    const db = getFirestore();
+
+    const postsRef = collection(db, 'posts');
+    const q = query(postsRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, snapshot => {
+      const data: Post[] = snapshot.docs.map(docSnap => {
+        const raw = docSnap.data() as any;
+        return {
+          id: raw.id ?? docSnap.id,
+          title: raw.title ?? '',
+          body: raw.body ?? '',
+          imageUrl: raw.imageUrl ?? null,
+          createdAt: raw.createdAt ?? new Date().toISOString(),
+        };
+      });
+
+      dispatch(setPosts(data));
+    });
+
+    return () => unsubscribe();
+  }, [dispatch]);
+
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyTitle}>{t('postsList.emptyTitle')}</Text>
@@ -23,7 +61,7 @@ const PostsListScreen: React.FC = () => {
     </View>
   );
 
-  const renderItem = ({item}: any) => (
+  const renderItem = ({item}: {item: Post}) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() =>
@@ -46,7 +84,6 @@ const PostsListScreen: React.FC = () => {
         contentContainerStyle={posts.length === 0 && styles.emptyListContent}
       />
 
-      {/* Floating "New post" button */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('CreatePost' as never)}>

@@ -2,45 +2,72 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {Text} from 'react-native';
+
 import PostsListScreen from '../screens/PostsListScreen';
-import CreatePostScreen from '../screens/CreatePostScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
+import CreatePostScreen from '../screens/CreatePostScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import {useTranslation} from 'react-i18next';
 
-const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+import {
+  RootStackParamList,
+  MainTabsParamList,
+  PostsStackParamList,
+} from './types';
 
-const MainTabs = () => {
-  const {t} = useTranslation();
+const RootStack = createNativeStackNavigator<RootStackParamList>();
+const Tabs = createBottomTabNavigator<MainTabsParamList>();
+const PostsStack = createNativeStackNavigator<PostsStackParamList>();
 
+// Stack used inside the "Posts" tab
+function PostsStackNavigator() {
   return (
-    <Tab.Navigator>
-      <Tab.Screen
-        name="Feed"
+    <PostsStack.Navigator>
+      <PostsStack.Screen
+        name="PostsList"
         component={PostsListScreen}
-        options={{title: t('tabs.feed')}}
+        options={{title: 'Posts'}}
       />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{title: t('tabs.settings')}}
+      <PostsStack.Screen
+        name="PostDetail"
+        component={PostDetailScreen}
+        options={{title: 'Post'}}
       />
-    </Tab.Navigator>
+      <PostsStack.Screen
+        name="CreatePost"
+        component={CreatePostScreen}
+        options={{title: 'New post'}}
+      />
+    </PostsStack.Navigator>
   );
-};
+}
 
+function MainTabs() {
+  return (
+    <Tabs.Navigator>
+      <Tabs.Screen
+        name="PostsTab"
+        component={PostsStackNavigator}
+        options={{title: 'Posts'}}
+      />
+      <Tabs.Screen
+        name="SettingsTab"
+        component={SettingsScreen}
+        options={{
+          title: 'Settings',
+          tabBarIcon: () => <Text>⚙️</Text>,
+        }}
+      />
+    </Tabs.Navigator>
+  );
+}
+
+// Root stack
 const AppNavigator = () => {
   return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="MainTabs"
-        component={MainTabs}
-        options={{headerShown: false}}
-      />
-      <Stack.Screen name="CreatePost" component={CreatePostScreen} />
-      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
-    </Stack.Navigator>
+    <RootStack.Navigator screenOptions={{headerShown: false}}>
+      <RootStack.Screen name="MainTabs" component={MainTabs} />
+    </RootStack.Navigator>
   );
 };
 

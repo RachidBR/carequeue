@@ -1,3 +1,4 @@
+// src/screens/CreatePostScreen.tsx
 import React, {useLayoutEffect, useState} from 'react';
 import {
   View,
@@ -10,15 +11,19 @@ import {
   Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import { addPost } from '@/state/posts/postsSlice';
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+} from '@react-native-firebase/firestore';
 
 const CreatePostScreen: React.FC = () => {
   const navigation = useNavigation();
-  const dispatch = useDispatch();
   const {t} = useTranslation();
 
   const [title, setTitle] = useState('');
@@ -62,9 +67,7 @@ const CreatePostScreen: React.FC = () => {
 
   const handleTakePhoto = async () => {
     const ok = await requestCameraPermission();
-    if (!ok) {
-      return;
-    }
+    if (!ok) return;
 
     const result = await launchCamera({
       mediaType: 'photo',
@@ -78,9 +81,7 @@ const CreatePostScreen: React.FC = () => {
 
   const handlePickFromGallery = async () => {
     const ok = await requestGalleryPermission();
-    if (!ok) {
-      return;
-    }
+    if (!ok) return;
 
     const result = await launchImageLibrary({
       mediaType: 'photo',
@@ -102,21 +103,40 @@ const CreatePostScreen: React.FC = () => {
       return;
     }
 
+    console.log('[CreatePost] handleSave start');
     setSaving(true);
 
-    // for now, local-only: Redux
-    dispatch(
-      addPost({
-        id: Date.now().toString(),
+    try {
+      const db = getFirestore();
+      console.log('[CreatePost] got db');
+
+      const createdAt = new Date().toISOString();
+      const postsCol = collection(db, 'posts');
+      console.log('[CreatePost] before addDoc');
+
+      const docRef = await addDoc(postsCol, {
         title: title.trim(),
         body: body.trim(),
-        imageUri,
-        createdAt: new Date().toISOString(),
-      }),
-    );
+        imageUrl: imageUri ?? null,
+        createdAt,
+        createdAtServer: serverTimestamp(),
+      });
 
-    setSaving(false);
-    navigation.goBack();
+      console.log('[CreatePost] after addDoc, id =', docRef.id);
+
+      // just to be explicit
+      setTitle('');
+      setBody('');
+      setImageUri(null);
+
+      navigation.goBack();
+      console.log('[CreatePost] called navigation.goBack()');
+    } catch (e) {
+      console.error('[CreatePost] error in handleSave', e);
+      Alert.alert('Error', 'Failed to save post.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -139,11 +159,13 @@ const CreatePostScreen: React.FC = () => {
       />
 
       <View style={styles.imageRow}>
-        <TouchableOpacity style={styles.button} onPress={handlePickFromGallery}>
+        <TouchableOpacity
+          style={styles.imageButton}
+          onPress={handlePickFromGallery}>
           <Text style={styles.buttonText}>{t('createPost.chooseImage')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
+        <TouchableOpacity style={styles.imageButton} onPress={handleTakePhoto}>
           <Text style={styles.buttonText}>{t('createPost.takePhoto')}</Text>
         </TouchableOpacity>
       </View>
@@ -152,7 +174,7 @@ const CreatePostScreen: React.FC = () => {
         <View style={styles.previewContainer}>
           <Image source={{uri: imageUri}} style={styles.preview} />
           <TouchableOpacity
-            style={[styles.button, styles.removeButton]}
+            style={styles.secondaryButton}
             onPress={() => setImageUri(null)}>
             <Text style={styles.removeButtonText}>
               {t('createPost.removeImage')}
@@ -162,10 +184,10 @@ const CreatePostScreen: React.FC = () => {
       )}
 
       <TouchableOpacity
-        style={[styles.button, styles.saveButton]}
+        style={styles.primaryButton}
         onPress={handleSave}
         disabled={saving}>
-        <Text style={styles.saveButtonText}>
+        <Text style={styles.primaryButtonText}>
           {saving ? t('createPost.saving') : t('createPost.save')}
         </Text>
       </TouchableOpacity>
@@ -194,20 +216,40 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 12,
   },
-  button: {
+  imageButton: {
     flex: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#f3f4f6',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
+  secondaryButton: {
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#fee2e2',
+  },
   buttonText: {fontSize: 14, fontWeight: '500'},
-  previewContainer: {alignItems: 'center', marginBottom: 16},
-  preview: {width: '100%', height: 200, borderRadius: 12, marginBottom: 8},
-  removeButton: {backgroundColor: '#fee2e2'},
+  previewContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  preview: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
   removeButtonText: {color: '#b91c1c', fontWeight: '600'},
-  saveButton: {backgroundColor: '#2563eb', marginTop: 8},
-  saveButtonText: {color: 'white', fontWeight: '600'},
+  primaryButton: {
+    marginTop: 16,
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  primaryButtonText: {color: 'white', fontWeight: '600', fontSize: 16},
 });
 
 export default CreatePostScreen;
