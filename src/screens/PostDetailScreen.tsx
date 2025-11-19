@@ -1,79 +1,29 @@
-import React, {useEffect, useLayoutEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Image,
-  ScrollView,
-} from 'react-native';
-import {useRoute, RouteProp, useNavigation} from '@react-navigation/native';
+// src/screens/PostDetailScreen.tsx
+import React, {useLayoutEffect} from 'react';
+import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
-import firestore from '@react-native-firebase/firestore';
-import {useTranslation} from 'react-i18next';
-
 import {RootState} from '../state/store';
-import {Post} from '../state/posts/types';
+import {useTranslation} from 'react-i18next';
 import { PostsStackParamList } from '@/types/navigation';
 
-type DetailRoute = RouteProp<PostsStackParamList, 'PostDetail'>;
+type PostDetailRouteProp = RouteProp<PostsStackParamList, 'PostDetail'>;
 
 const PostDetailScreen: React.FC = () => {
-  const route = useRoute<DetailRoute>();
+  const route = useRoute<PostDetailRouteProp>();
   const navigation = useNavigation();
   const {t} = useTranslation();
   const {id} = route.params;
 
-  const postFromStore = useSelector((state: RootState) =>
+  const post = useSelector((state: RootState) =>
     state.posts.items.find(p => p.id === id),
   );
 
-  const [post, setPost] = useState<Post | null>(postFromStore ?? null);
-  const [loading, setLoading] = useState(!postFromStore);
-
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: t('postDetail.title'),
+      title: post?.title ?? t('postDetail.titleFallback'),
     });
-  }, [navigation, t]);
-
-  // If the post isn’t in Redux (e.g. cold start via deep link), fetch from Firestore
-  useEffect(() => {
-    if (postFromStore) return;
-
-    const fetch = async () => {
-      try {
-        const doc = await firestore().collection('posts').doc(id).get();
-        if (doc.exists) {
-          const raw = doc.data()!;
-          setPost({
-            id,
-            title: (raw.title as string) ?? '',
-            body: (raw.body as string) ?? '',
-            imageUrl: (raw.imageUrl as string | null) ?? null,
-            createdAt: (raw.createdAt as string) ?? '',
-          });
-        } else {
-          setPost(null);
-        }
-      } catch (e) {
-        console.error(e);
-        setPost(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetch();
-  }, [id, postFromStore]);
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
-    );
-  }
+  }, [navigation, post, t]);
 
   if (!post) {
     return (
@@ -84,28 +34,37 @@ const PostDetailScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{post.title}</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {post.imageUrl ? (
         <Image source={{uri: post.imageUrl}} style={styles.image} />
       ) : null}
+
+      <Text style={styles.title}>{post.title}</Text>
+      <Text style={styles.date}>
+        {new Date(post.createdAt).toLocaleString()}
+      </Text>
       <Text style={styles.body}>{post.body}</Text>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  center: {flex: 1, alignItems: 'center', justifyContent: 'center'},
-  container: {padding: 16},
-  title: {fontSize: 20, fontWeight: '700', marginBottom: 12},
+  container: {flex: 1, backgroundColor: 'white'},
+  content: {padding: 16},
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   image: {
     width: '100%',
     height: 220,
     borderRadius: 12,
-    marginBottom: 12,
-    backgroundColor: '#e5e5e5',
+    marginBottom: 16,
   },
-  body: {fontSize: 16, lineHeight: 22},
+  title: {fontSize: 20, fontWeight: '700', marginBottom: 8},
+  date: {fontSize: 12, color: '#6b7280', marginBottom: 16},
+  body: {fontSize: 14, lineHeight: 20},
 });
 
 export default PostDetailScreen;

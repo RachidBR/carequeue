@@ -1,4 +1,3 @@
-// src/screens/CreatePostScreen.tsx
 import React, {useLayoutEffect, useState} from 'react';
 import {
   View,
@@ -11,19 +10,16 @@ import {
   Platform,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  serverTimestamp,
-} from '@react-native-firebase/firestore';
+import {addPost} from '@/state/posts/postsSlice';
 
 const CreatePostScreen: React.FC = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const {t} = useTranslation();
 
   const [title, setTitle] = useState('');
@@ -44,9 +40,8 @@ const CreatePostScreen: React.FC = () => {
         : PERMISSIONS.ANDROID.CAMERA;
 
     const result = await request(perm);
-    if (result === RESULTS.GRANTED) {
-      return true;
-    }
+    if (result === RESULTS.GRANTED) return true;
+
     Alert.alert(t('permissions.cameraRequired'));
     return false;
   };
@@ -58,9 +53,8 @@ const CreatePostScreen: React.FC = () => {
         : PERMISSIONS.ANDROID.READ_MEDIA_IMAGES;
 
     const result = await request(perm);
-    if (result === RESULTS.GRANTED) {
-      return true;
-    }
+    if (result === RESULTS.GRANTED) return true;
+
     Alert.alert(t('permissions.galleryRequired'));
     return false;
   };
@@ -93,7 +87,7 @@ const CreatePostScreen: React.FC = () => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!title.trim()) {
       Alert.alert(t('createPost.errors.titleRequired'));
       return;
@@ -103,40 +97,19 @@ const CreatePostScreen: React.FC = () => {
       return;
     }
 
-    console.log('[CreatePost] handleSave start');
     setSaving(true);
 
-    try {
-      const db = getFirestore();
-      console.log('[CreatePost] got db');
-
-      const createdAt = new Date().toISOString();
-      const postsCol = collection(db, 'posts');
-      console.log('[CreatePost] before addDoc');
-
-      const docRef = await addDoc(postsCol, {
+    dispatch(
+      addPost({
         title: title.trim(),
         body: body.trim(),
-        imageUrl: imageUri ?? null,
-        createdAt,
-        createdAtServer: serverTimestamp(),
-      });
+        imageUrl: imageUri,
+      }),
+    );
 
-      console.log('[CreatePost] after addDoc, id =', docRef.id);
+    setSaving(false);
 
-      // just to be explicit
-      setTitle('');
-      setBody('');
-      setImageUri(null);
-
-      navigation.goBack();
-      console.log('[CreatePost] called navigation.goBack()');
-    } catch (e) {
-      console.error('[CreatePost] error in handleSave', e);
-      Alert.alert('Error', 'Failed to save post.');
-    } finally {
-      setSaving(false);
-    }
+    navigation.goBack();
   };
 
   return (
