@@ -1,4 +1,3 @@
-// src/screens/PostDetailScreen.tsx
 import React, {useLayoutEffect} from 'react';
 import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';

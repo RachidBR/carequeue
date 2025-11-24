@@ -1,4 +1,3 @@
-// src/screens/PostsListScreen.tsx
 import React, {useLayoutEffect} from 'react';
 import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
@@ -29,7 +28,6 @@ const PostsListScreen: React.FC = () => {
     <TouchableOpacity
       style={styles.card}
       onPress={() =>
-        // quick + dirty typing
         navigation.navigate('PostDetail' as never, {id: item.id} as never)
       }>
       <Text style={styles.cardTitle}>{item.title}</Text>

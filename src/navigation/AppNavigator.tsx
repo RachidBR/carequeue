@@ -1,4 +1,3 @@
-// src/navigation/AppNavigator.tsx
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -19,7 +18,6 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabsParamList>();
 const PostsStack = createNativeStackNavigator<PostsStackParamList>();
 
-// Stack used inside the "Posts" tab
 function PostsStackNavigator() {
   return (
     <PostsStack.Navigator>
@@ -62,7 +60,6 @@ function MainTabs() {
   );
 }
 
-// Root stack
 const AppNavigator = () => {
   return (
     <RootStack.Navigator screenOptions={{headerShown: false}}>
