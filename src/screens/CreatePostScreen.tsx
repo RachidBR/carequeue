@@ -16,6 +16,7 @@ import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 import {addPost} from '@/state/posts/postsSlice';
+import {notifyNewPost} from '@/services/notifications';
 
 const CreatePostScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -87,7 +88,7 @@ const CreatePostScreen: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) {
       Alert.alert(t('createPost.errors.titleRequired'));
       return;
@@ -97,20 +98,35 @@ const CreatePostScreen: React.FC = () => {
       return;
     }
 
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    dispatch(
-      addPost({
-        title: title.trim(),
-        body: body.trim(),
-        imageUrl: imageUri,
-      }),
-    );
+      const cleanTitle = title.trim();
+      const cleanBody = body.trim();
 
-    setSaving(false);
+      dispatch(
+        addPost({
+          title: cleanTitle,
+          body: cleanBody,
+          imageUrl: imageUri,
+        }),
+      );
 
-    navigation.goBack();
+
+      await notifyNewPost({title: cleanTitle, body: cleanBody});
+
+      setTitle('');
+      setBody('');
+      setImageUri(null);
+
+      navigation.goBack();
+    } catch (error) {
+      console.error('CreatePost : handleSave error', error);
+    } finally {
+      setSaving(false);
+    }
   };
+
 
   return (
     <View style={styles.container}>

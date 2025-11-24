@@ -5,7 +5,7 @@ export interface Post {
     title: string;
     body: string;
     imageUrl: string | null;
-    createdAt: string; // ISO string
+    createdAt: string;
 }
 
 export interface PostsState {

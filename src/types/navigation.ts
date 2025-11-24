@@ -1,5 +1,3 @@
-// src/navigation/types.ts
-
 export type PostsStackParamList = {
     PostsList: undefined;
     PostDetail: { id: string };

@@ -6,9 +6,16 @@ import {store} from './src/state/store';
 import AppNavigator from './src/navigation/AppNavigator';
 import linking from './src/navigation/linking';
 import './src/i18n';
+import { requestNotificationPermission } from '@/services/notifications';
 
 
 export default function App() {
+
+  React.useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+
   return (
     <Provider store={store}>
       <NavigationContainer linking={linking}>

@@ -1,58 +1,57 @@
-import notifee, { EventType, AndroidImportance } from '@notifee/react-native';
-import messaging from '@react-native-firebase/messaging';
-import { Linking } from 'react-native';
+import notifee, {
+    AndroidImportance,
+    AndroidVisibility,
+    AuthorizationStatus,
+} from '@notifee/react-native';
 
+export async function requestNotificationPermission() {
+    try {
+        const settings = await notifee.requestPermission();
 
-export async function requestPermissions() {
-    await notifee.requestPermission();
-    await notifee.createChannel({ id: 'default', name: 'Default', importance: AndroidImportance.DEFAULT });
+        if (
+            settings.authorizationStatus === AuthorizationStatus.DENIED ||
+            settings.authorizationStatus === AuthorizationStatus.NOT_DETERMINED
+        ) {
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        return false;
+    }
 }
 
-
-export async function getFcmToken() {
-    const token = await messaging().getToken();
-    return token;
+async function ensureDefaultChannel() {
+    await notifee.createChannel({
+        id: 'default',
+        name: 'Default',
+        importance: AndroidImportance.HIGH,
+        visibility: AndroidVisibility.PUBLIC,
+    });
 }
 
+export async function notifyNewPost(params: { title: string; body: string }) {
+    console.log('[Notif] otifyNewPost called with params:', params);
 
-export function startNotificationListeners() {
-    // Foreground messages → display local
-    const unsubMsg = messaging().onMessage(async remoteMessage => {
-        const { title, body } = remoteMessage.notification || {};
-        const postId = remoteMessage.data?.postId;
+    try {
+        await ensureDefaultChannel();
+
         await notifee.displayNotification({
-            title: title || 'New update',
-            body: body || 'Tap to view',
-            android: { channelId: 'default' },
-            data: { postId },
+            title: 'Nouveau post publié',
+            body: `${params.title} – ${params.body.slice(0, 60)}...`,
+            android: {
+                channelId: 'default',
+                pressAction: { id: 'default' },
+            },
+            ios: {
+                foregroundPresentationOptions: {
+                    alert: true,
+                    badge: true,
+                    sound: true,
+                },
+            },
         });
-    });
 
-
-    // Taps on Notifee notifications
-    const unsubNotifee = notifee.onForegroundEvent(async ({ type, detail }) => {
-        if (type === EventType.PRESS) {
-            const postId = detail.notification?.data?.postId;
-            if (postId) Linking.openURL(`carequeue://post/${postId}`);
-        }
-    });
-
-
-    // Background taps (headless)
-    notifee.onBackgroundEvent(async ({ type, detail }) => {
-        if (type === EventType.PRESS) {
-            const postId = detail.notification?.data?.postId;
-            if (postId) Linking.openURL(`carequeue://post/${postId}`);
-        }
-    });
-
-
-    // App opened from a background data-only push
-    const unsubOpen = messaging().onNotificationOpenedApp(remoteMessage => {
-        const postId = remoteMessage?.data?.postId;
-        if (postId) Linking.openURL(`carequeue://post/${postId}`);
-    });
-
-
-    return () => { unsubMsg(); unsubNotifee(); unsubOpen(); };
+    } catch (error) {
+    }
 }
