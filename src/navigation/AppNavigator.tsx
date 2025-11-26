@@ -2,17 +2,16 @@ import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Text} from 'react-native';
+import {useSelector} from 'react-redux';
+import {RootState} from '@/state/store';
 
 import PostsListScreen from '../screens/PostsListScreen';
 import PostDetailScreen from '../screens/PostDetailScreen';
 import CreatePostScreen from '../screens/CreatePostScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import { MainTabsParamList, PostsStackParamList, RootStackParamList } from '@/types/navigation';
+import LoginScreen from '@/screens/LoginScreen';
+import ProfileScreen from '@/screens/ProfileScreen';
 
-import {
-  RootStackParamList,
-  MainTabsParamList,
-  PostsStackParamList,
-} from './types';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabsParamList>();
@@ -49,11 +48,11 @@ function MainTabs() {
         options={{title: 'Posts'}}
       />
       <Tabs.Screen
-        name="SettingsTab"
-        component={SettingsScreen}
+        name="ProfileTab"
+        component={ProfileScreen}
         options={{
-          title: 'Settings',
-          tabBarIcon: () => <Text>⚙️</Text>,
+          title: 'Profile',
+          tabBarIcon: () => <Text>👤</Text>,
         }}
       />
     </Tabs.Navigator>
@@ -61,9 +60,15 @@ function MainTabs() {
 }
 
 const AppNavigator = () => {
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
+
   return (
     <RootStack.Navigator screenOptions={{headerShown: false}}>
-      <RootStack.Screen name="MainTabs" component={MainTabs} />
+      {currentUser ? (
+        <RootStack.Screen name="MainTabs" component={MainTabs} />
+      ) : (
+        <RootStack.Screen name="Login" component={LoginScreen} />
+      )}
     </RootStack.Navigator>
   );
 };
