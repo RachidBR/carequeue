@@ -6,11 +6,13 @@ import {store} from './src/state/store';
 import AppNavigator from './src/navigation/AppNavigator';
 import linking from './src/navigation/linking';
 import './src/i18n';
+
 import {initFCM} from '@/services/pushNotifications';
-import {navigationRef} from '@/navigation/navigationRef';
+import {requestNotificationPermissionOnce} from '@/services/notifications';
 
 export default function App() {
   React.useEffect(() => {
+    requestNotificationPermissionOnce();
     initFCM().catch(err => {
       console.warn('[FCM] init error', err);
     });
@@ -18,7 +20,7 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <NavigationContainer linking={linking} ref={navigationRef}>
+      <NavigationContainer linking={linking}>
         <StatusBar barStyle="dark-content" />
         <AppNavigator />
       </NavigationContainer>

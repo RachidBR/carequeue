@@ -1,84 +1,76 @@
-import { getApp } from '@react-native-firebase/app';
+import { Platform, Alert } from 'react-native';
 import {
     getMessaging,
     requestPermission,
-    AuthorizationStatus,
     getToken,
     onMessage,
     onNotificationOpenedApp,
     getInitialNotification,
+    AuthorizationStatus,
+    FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
+import { getApp } from '@react-native-firebase/app';
 import { navigate } from '../navigation/navigationRef';
-import { showRemoteFCMNotification } from '@/services/notifications';
 
-// 1) Ask for push permission + get FCM token + set handlers
 export async function initFCM() {
     console.log('[FCM] initFCM start');
 
     const app = getApp();
     const msg = getMessaging(app);
 
-    // permission + token stuff (already good)
-    const authStatus = await requestPermission(msg);
-    console.log('[FCM] permission status =', authStatus);
-
-    const enabled =
-        authStatus === AuthorizationStatus.AUTHORIZED ||
-        AuthorizationStatus.PROVISIONAL;
-
-    if (!enabled) {
-        // same as before...
-    }
-
     try {
-        const token = await getToken(msg);
-        console.log('[FCM] device token =', token);
-    } catch (err) {
-        console.warn('[FCM] getToken error:', err);
-    }
+        const authStatus = await requestPermission(msg);
+        console.log('[FCM] permission status =', authStatus);
 
-    // FOREGROUND
-    onMessage(msg, async remoteMessage => {
-        console.log('[FCM] onMessage (foreground):', remoteMessage);
+        const enabled =
+            authStatus === AuthorizationStatus.AUTHORIZED ||
+            authStatus === AuthorizationStatus.PROVISIONAL;
 
-        const title = remoteMessage.notification?.title ?? 'New message';
-        const body = remoteMessage.notification?.body ?? '';
-
-        await showRemoteFCMNotification({ title, body });
-    });
-
-    // background / killed handlers (unchanged)
-    onNotificationOpenedApp(msg, remoteMessage => {
-        console.log('[FCM] onNotificationOpenedApp:', remoteMessage?.data);
-        const postId = remoteMessage?.data?.postId;
-
-        if (typeof postId === 'string') {
-            navigateToPostFromNotification(postId);
-        } else {
-            console.log('[FCM] onNotificationOpenedApp: postId is missing or not a string');
+        if (!enabled && Platform.OS === 'ios') {
+            Alert.alert(
+                'Notifications désactivées',
+                "Tu peux les activer plus tard dans les réglages du téléphone.",
+            );
         }
-    });
 
-    const initialNotification = await getInitialNotification(msg);
-    const initialPostId = initialNotification?.data?.postId;
+        try {
+            const token = await getToken(msg);
+            console.log('[FCM] device token =', token);
+        } catch (err) {
+            console.warn('[FCM] getToken error:', err);
+        }
 
-    if (typeof initialPostId === 'string') {
-        console.log('[FCM] getInitialNotification with postId:', initialPostId);
-        navigateToPostFromNotification(initialPostId);
-    } else if (initialNotification) {
-        console.log('[FCM] getInitialNotification without usable postId:', initialNotification.data);
+        onMessage(msg, async remoteMessage => {
+            console.log('[FCM] onMessage (foreground):', remoteMessage);
+            // (optional) call Notifee here to show a banner even in foreground
+        });
+
+        onNotificationOpenedApp(
+            msg,
+            (remoteMessage: FirebaseMessagingTypes.RemoteMessage | null) => {
+                console.log('[FCM] onNotificationOpenedApp:', remoteMessage?.data);
+                const postId = remoteMessage?.data?.postId;
+                if (postId) navigateToPostFromNotification(String(postId));
+            },
+        );
+
+        const initialNotification = await getInitialNotification(msg);
+        if (initialNotification?.data?.postId) {
+            console.log(
+                '[FCM] getInitialNotification with postId:',
+                initialNotification.data.postId,
+            );
+            navigateToPostFromNotification(String(initialNotification.data.postId));
+        }
+
+        console.log('[FCM] initFCM done');
+    } catch (err) {
+        console.warn('[FCM] initFCM top-level error:', err);
     }
-
-    console.log('[FCM] initFCM done');
 }
 
-// 2) Function that knows how to navigate into nested tabs/stack
 export function navigateToPostFromNotification(postId: string) {
     console.log('[Nav] navigateToPostFromNotification', postId);
-
-    // RootStack: { MainTabs }
-    // MainTabs: { PostsTab, SettingsTab }
-    // PostsTab -> PostsStack: { PostsList, PostDetail, CreatePost }
 
     navigate('MainTabs' as any, {
         screen: 'PostsTab',
