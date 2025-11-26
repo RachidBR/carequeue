@@ -18,6 +18,8 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {addPost} from '@/state/posts/postsSlice';
 import { notifyNewPost } from '@/services/notifications';
 import {Colors, FontSize, Radius, Spacing, TextPresets} from '../theme';
+import { getDB, insertPost } from '@/services/db';
+import { Post } from '@/state/posts/types';
 
 
 const CreatePostScreen: React.FC = () => {
@@ -90,44 +92,58 @@ const CreatePostScreen: React.FC = () => {
     }
   };
 
-  const handleSave = async () => {
-    if (!title.trim()) {
-      Alert.alert(t('createPost.errors.titleRequired'));
-      return;
-    }
-    if (!body.trim()) {
-      Alert.alert(t('createPost.errors.bodyRequired'));
-      return;
-    }
+ const handleSave = async () => {
+   if (!title.trim()) {
+     Alert.alert(t('createPost.errors.titleRequired'));
+     return;
+   }
+   if (!body.trim()) {
+     Alert.alert(t('createPost.errors.bodyRequired'));
+     return;
+   }
 
-    try {
-      setSaving(true);
+   try {
+     setSaving(true);
 
-      const cleanTitle = title.trim();
-      const cleanBody = body.trim();
+     const cleanTitle = title.trim();
+     const cleanBody = body.trim();
 
-      dispatch(
-        addPost({
-          title: cleanTitle,
-          body: cleanBody,
-          imageUrl: imageUri,
-        }),
-      );
+     // create Post object so Redux & SQLite share same data
+     const post: Post = {
+       id: Date.now().toString(),
+       title: cleanTitle,
+       body: cleanBody,
+       imageUrl: imageUri,
+       createdAt: new Date().toISOString(),
+     };
 
+     // 1) Redux
+     dispatch(
+       addPost({
+         title: post.title,
+         body: post.body,
+         imageUrl: post.imageUrl,
+       }),
+     );
 
-      await notifyNewPost({title: cleanTitle, body: cleanBody});
+     // 2) SQLite
+     const db = await getDB();
+     await insertPost(db, post);
 
-      setTitle('');
-      setBody('');
-      setImageUri(null);
+     // 3) Local notification (optional)
+     await notifyNewPost({title: cleanTitle, body: cleanBody});
 
-      navigation.goBack();
-    } catch (error) {
-      console.error('CreatePost : handleSave error', error);
-    } finally {
-      setSaving(false);
-    }
-  };
+     setTitle('');
+     setBody('');
+     setImageUri(null);
+     navigation.goBack();
+   } catch (error) {
+     console.error('CreatePost : handleSave error', error);
+     Alert.alert('Error', 'Failed to save post.');
+   } finally {
+     setSaving(false);
+   }
+ };
 
 
   return (

@@ -9,14 +9,34 @@ import './src/i18n';
 
 import {initFCM} from '@/services/pushNotifications';
 import {requestNotificationPermissionOnce} from '@/services/notifications';
+import { initDB, loadPosts } from '@/services/db';
+import { setPosts } from '@/state/posts/postsSlice';
 
 export default function App() {
+  const [dbReady, setDbReady] = React.useState(false);
+
   React.useEffect(() => {
+    (async () => {
+      try {
+        const db = await initDB();
+        const posts = await loadPosts(db);
+        store.dispatch(setPosts(posts));
+        setDbReady(true);
+      } catch (e) {
+        console.error('[DB] init error', e);
+        setDbReady(true); // app still works with empty posts
+      }
+    })();
+
     requestNotificationPermissionOnce();
-    initFCM().catch(err => {
-      console.warn('[FCM] init error', err);
-    });
+    initFCM().catch(err => console.warn('[FCM] init error', err));
   }, []);
+
+  if (!dbReady) {
+    // super simple splash
+    return null;
+  }
+
 
   return (
     <Provider store={store}>
