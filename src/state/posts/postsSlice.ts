@@ -1,40 +1,32 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Post, PostsState } from './types';
+import type { Post, AddPostPayload } from './types';
+
+type PostsState = {
+    items: Post[];
+};
 
 const initialState: PostsState = {
     items: [],
 };
 
-interface AddPostPayload {
-    title: string;
-    body: string;
-    imageUrl: string | null;
-}
-
 const postsSlice = createSlice({
     name: 'posts',
     initialState,
     reducers: {
-        addPost: (state, action: PayloadAction<AddPostPayload>) => {
-            const { title, body, imageUrl } = action.payload;
+        setPosts(state, action: PayloadAction<Post[]>) {
+            state.items = action.payload;
+        },
+        addPost(state, action: PayloadAction<AddPostPayload>) {
             const now = new Date().toISOString();
-
             const newPost: Post = {
                 id: Date.now().toString(),
-                title,
-                body,
-                imageUrl,
                 createdAt: now,
+                ...action.payload,
             };
-
             state.items.unshift(newPost);
-        },
-
-        setPosts: (state, action: PayloadAction<Post[]>) => {
-            state.items = action.payload;
         },
     },
 });
 
-export const { addPost, setPosts } = postsSlice.actions;
+export const { setPosts, addPost } = postsSlice.actions;
 export default postsSlice.reducer;

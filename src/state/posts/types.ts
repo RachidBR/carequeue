@@ -1,13 +1,13 @@
-export type PostId = string;
-
-export interface Post {
-    id: PostId;
+export type Post = {
+    id: string;
     title: string;
     body: string;
     imageUrl: string | null;
     createdAt: string;
-}
+};
 
-export interface PostsState {
-    items: Post[];
-}
+export type AddPostPayload = {
+    title: string;
+    body: string;
+    imageUrl: string | null;
+};

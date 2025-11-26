@@ -28,6 +28,9 @@
       ],
       "@/types/*": [
         "src/types/*"
+      ],
+      "@/theme/*": [
+        "src/theme/*"
       ]
     }
   },

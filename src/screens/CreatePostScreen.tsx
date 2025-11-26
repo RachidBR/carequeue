@@ -16,7 +16,9 @@ import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 import {addPost} from '@/state/posts/postsSlice';
-import {notifyNewPost} from '@/services/notifications';
+import { notifyNewPost } from '@/services/notifications';
+import {Colors, FontSize, Radius, Spacing, TextPresets} from '../theme';
+
 
 const CreatePostScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -185,16 +187,22 @@ const CreatePostScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 16, backgroundColor: 'white'},
-  label: {fontSize: 14, fontWeight: '500', marginBottom: 4},
+  container: {
+    flex: 1,
+    padding: Spacing.md,
+    backgroundColor: Colors.background,
+  },
+  label: {
+    ...TextPresets.Label,
+  },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
-    marginBottom: 12,
+    borderColor: Colors.border,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    fontSize: FontSize.MEDIUM,
+    marginBottom: Spacing.sm,
   },
   textArea: {
     height: 120,
@@ -202,43 +210,55 @@ const styles = StyleSheet.create({
   },
   imageRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
+    gap: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
   imageButton: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: Colors.primarySoft,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.md,
     alignItems: 'center',
   },
   secondaryButton: {
-    marginTop: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#fee2e2',
+    marginTop: Spacing.xs,
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.dangerSoft,
   },
-  buttonText: {fontSize: 14, fontWeight: '500'},
+  buttonText: {
+    ...TextPresets.Body,
+    fontWeight: '500',
+  },
   previewContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.md,
   },
   preview: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
-    marginBottom: 8,
+    borderRadius: Radius.lg,
+    marginBottom: Spacing.xs,
   },
-  removeButtonText: {color: '#b91c1c', fontWeight: '600'},
+  removeButtonText: {
+    ...TextPresets.Body,
+    color: Colors.danger,
+    fontWeight: '600',
+  },
   primaryButton: {
-    marginTop: 16,
-    backgroundColor: '#2563eb',
-    borderRadius: 12,
-    paddingVertical: 14,
+    marginTop: Spacing.md,
+    backgroundColor: Colors.primary,
+    borderRadius: Radius.lg,
+    paddingVertical: Spacing.md,
     alignItems: 'center',
   },
-  primaryButtonText: {color: 'white', fontWeight: '600', fontSize: 16},
+  primaryButtonText: {
+    ...TextPresets.Body,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: FontSize.LARGE,
+  },
 });
 
 export default CreatePostScreen;
