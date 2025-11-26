@@ -1,56 +1,68 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
-import {useSelector, useDispatch} from 'react-redux';
-import {RootState} from '@/state/store';
-import {updateProfile, logout} from '@/state/user/userSlice';
-import {Colors, Spacing, Radius, TextPresets, FontSize} from '../theme';
+import React, {useLayoutEffect} from 'react';
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {useTranslation} from 'react-i18next';
+import {useNavigation} from '@react-navigation/native';
+
+import {Colors, Spacing, Radius, TextPresets} from '../theme';
 
 const ProfileScreen: React.FC = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.user.currentUser);
+  const {t} = useTranslation();
+  const navigation = useNavigation();
 
-  const [displayName, setDisplayName] = useState(user?.displayName ?? '');
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: t('profile.title'),
+    });
+  }, [navigation, t]);
 
-  if (!user) {
-    return null;
-  }
-
-  const handleSave = () => {
-    if (!displayName.trim()) return;
-    dispatch(updateProfile({displayName: displayName.trim()}));
-  };
-
-  const handleLogout = () => {
-    dispatch(logout());
+  // Later you can replace this with real user data from Redux / backend
+  const user = {
+    name: 'John Doe',
+    email: 'john.doe@example.com',
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profil</Text>
+      <View style={styles.headerCard}>
+        <View style={styles.avatarContainer}>
+          <Image
+            // placeholder avatar
+            source={{
+              uri: 'https://ui-avatars.com/api/?name=JD&background=0D8ABC&color=fff',
+            }}
+            style={styles.avatar}
+          />
+        </View>
 
-      <Text style={styles.label}>Email</Text>
-      <Text style={styles.value}>{user.email}</Text>
+        <View style={styles.headerText}>
+          <Text style={styles.name}>{user.name}</Text>
+          <Text style={styles.email}>{user.email}</Text>
+        </View>
+      </View>
 
-      <Text style={styles.label}>Nom affiché</Text>
-      <TextInput
-        style={styles.input}
-        value={displayName}
-        onChangeText={setDisplayName}
-      />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('profile.accountSection')}</Text>
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>Enregistrer</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.row}>
+          <Text style={styles.rowLabel}>{t('profile.editProfile')}</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Se déconnecter</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.row}>
+          <Text style={styles.rowLabel}>{t('profile.changeLanguage')}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('profile.otherSection')}</Text>
+
+        <TouchableOpacity style={styles.row}>
+          <Text style={styles.rowLabel}>{t('profile.aboutApp')}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.row, styles.logoutRow]}>
+          <Text style={styles.logoutLabel}>{t('profile.logout')}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -59,50 +71,69 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-    padding: Spacing.lg,
+    padding: Spacing.md,
   },
-  title: {
-    ...TextPresets.H1,
+  headerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    padding: Spacing.md,
+    borderRadius: Radius.lg,
+    marginBottom: Spacing.lg,
+    // shadow
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: {width: 0, height: 2},
+    shadowRadius: 4,
   },
-  label: {
-    ...TextPresets.Label,
+  avatarContainer: {
+    marginRight: Spacing.md,
   },
-  value: {
-    ...TextPresets.Body,
-    marginBottom: Spacing.md,
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.border,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.border,
+  headerText: {
+    flex: 1,
+  },
+  name: {
+    ...TextPresets.h2,
+    marginBottom: Spacing.xs,
+  },
+  email: {
+    ...TextPresets.body,
+    color: Colors.muted,
+  },
+  section: {
+    marginBottom: Spacing.lg,
+  },
+  sectionTitle: {
+    ...TextPresets.caption,
+    textTransform: 'uppercase',
+    color: Colors.muted,
+    marginBottom: Spacing.s,
+  },
+  row: {
+    backgroundColor: Colors.surface,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
     borderRadius: Radius.md,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    fontSize: FontSize.MEDIUM,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xs,
   },
-  saveButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.lg,
-    alignItems: 'center',
-    marginTop: Spacing.sm,
+  rowLabel: {
+    ...TextPresets.body,
   },
-  saveButtonText: {
-    ...TextPresets.Body,
-    color: '#FFFFFF',
+  logoutRow: {
+    marginTop: Spacing.s,
+    backgroundColor: Colors.errorSoft,
+  },
+  logoutLabel: {
+    ...TextPresets.body,
+    color: Colors.error,
     fontWeight: '600',
-  },
-  logoutButton: {
-    marginTop: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-  },
-  logoutText: {
-    ...TextPresets.Body,
-    color: Colors.textMuted,
   },
 });
 

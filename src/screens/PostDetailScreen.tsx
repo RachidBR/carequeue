@@ -1,17 +1,20 @@
-import React, {useLayoutEffect} from 'react';
+import React, {useLayoutEffect, useMemo} from 'react';
 import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {useRoute, RouteProp, useNavigation} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
-import {RootState} from '../state/store';
 import {useTranslation} from 'react-i18next';
+
+import {RootState} from '../state/store';
+import {Colors, Spacing, Radius, TextPresets, FontSize} from '../theme';
 import { PostsStackParamList } from '@/types/navigation';
 
-type PostDetailRouteProp = RouteProp<PostsStackParamList, 'PostDetail'>;
+type DetailRoute = RouteProp<PostsStackParamList, 'PostDetail'>;
 
 const PostDetailScreen: React.FC = () => {
-  const route = useRoute<PostDetailRouteProp>();
+  const route = useRoute<DetailRoute>();
   const navigation = useNavigation();
   const {t} = useTranslation();
+
   const {id} = route.params;
 
   const post = useSelector((state: RootState) =>
@@ -24,10 +27,20 @@ const PostDetailScreen: React.FC = () => {
     });
   }, [navigation, post, t]);
 
+  const formattedDate = useMemo(() => {
+    if (!post?.createdAt) return '';
+    return new Date(post.createdAt).toLocaleString();
+  }, [post?.createdAt]);
+
   if (!post) {
     return (
-      <View style={styles.center}>
-        <Text>{t('postDetail.notFound')}</Text>
+      <View style={styles.centered}>
+        <Text style={styles.notFoundTitle}>
+          {t('postDetail.notFoundTitle')}
+        </Text>
+        <Text style={styles.notFoundSubtitle}>
+          {t('postDetail.notFoundSubtitle')}
+        </Text>
       </View>
     );
   }
@@ -39,31 +52,60 @@ const PostDetailScreen: React.FC = () => {
       ) : null}
 
       <Text style={styles.title}>{post.title}</Text>
-      <Text style={styles.date}>
-        {new Date(post.createdAt).toLocaleString()}
-      </Text>
+
+      {formattedDate ? <Text style={styles.meta}>{formattedDate}</Text> : null}
+
       <Text style={styles.body}>{post.body}</Text>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: 'white'},
-  content: {padding: 16},
-  center: {
+  container: {
     flex: 1,
+    backgroundColor: Colors.background,
+  },
+  content: {
+    padding: Spacing.m,
+    paddingBottom: Spacing.xl,
+  },
+  centered: {
+    flex: 1,
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: Spacing.l,
+  },
+  notFoundTitle: {
+    ...TextPresets.title,
+    marginBottom: Spacing.xs,
+  },
+  notFoundSubtitle: {
+    ...TextPresets.body,
+    color: Colors.muted,
+    textAlign: 'center',
   },
   image: {
     width: '100%',
     height: 220,
-    borderRadius: 12,
-    marginBottom: 16,
+    borderRadius: Radius.xl,
+    marginBottom: Spacing.m,
+    backgroundColor: Colors.border, // fallback
   },
-  title: {fontSize: 20, fontWeight: '700', marginBottom: 8},
-  date: {fontSize: 12, color: '#6b7280', marginBottom: 16},
-  body: {fontSize: 14, lineHeight: 20},
+  title: {
+    ...TextPresets.h1,
+    marginBottom: Spacing.xs,
+  },
+  meta: {
+    ...TextPresets.caption,
+    color: Colors.muted,
+    marginBottom: Spacing.m,
+  },
+  body: {
+    ...TextPresets.body,
+    fontSize: FontSize.m,
+    lineHeight: 22,
+  },
 });
 
 export default PostDetailScreen;
