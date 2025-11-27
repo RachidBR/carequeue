@@ -5,12 +5,14 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {RootState} from '@/state/store';
 import {updateProfile, logout} from '@/state/user/userSlice';
 import {Colors, Spacing, Radius, TextPresets, FontSize, FontWeight} from '../theme';
+import {initDB, updateUserDisplayName} from '@/services/db';
 
 const ProfileScreen: React.FC = () => {
   const dispatch = useDispatch();
@@ -18,14 +20,25 @@ const ProfileScreen: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
 
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
+  const [saving, setSaving] = useState(false);
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
-  const handleSave = () => {
-    if (!displayName.trim()) return;
-    dispatch(updateProfile({displayName: displayName.trim()}));
+  const handleSave = async () => {
+    const cleanName = displayName.trim();
+    if (!cleanName) return;
+
+    try {
+      setSaving(true);
+      const db = await initDB();
+      await updateUserDisplayName(db, user.email, cleanName);
+      dispatch(updateProfile({displayName: cleanName}));
+    } catch (e) {
+      console.error('[Profile] save error', e);
+      Alert.alert('Error', 'Failed to save profile.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLogout = () => {
@@ -47,16 +60,17 @@ const ProfileScreen: React.FC = () => {
       />
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>{t('profile.save')}</Text>
+        <Text style={styles.saveButtonText}>
+          {saving ? '...' : t('profile.saveButton')}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>{t('profile.logout')}</Text>
+        <Text style={styles.logoutText}>{t('profile.logoutButton')}</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -4,9 +4,6 @@
     "feed": "Feed",
     "settings": "Settings"
   },
-  "common": {
-    "error": "Something went wrong."
-  },
   "postsList": {
     "title": "Announcements",
     "emptyTitle": "No announcements yet",
@@ -27,13 +24,10 @@
     "errors": {
       "titleRequired": "Title is required.",
       "bodyRequired": "Content is required."
-    },
-    "imageUploadFailedTitle": "Image not saved",
-    "imageUploadFailedMessage": "The announcement was saved but without the image."
+    }
   },
   "postDetail": {
     "title": "Announcement details",
-    "titleFallback": "Announcement details",
     "createdAt": "Created on {{date}}",
     "notFound": "Announcement not found."
   },
@@ -53,23 +47,20 @@
   },
   "login": {
     "title": "CareQueue",
-    "subtitle": "Log in to see your team announcements.",
+    "subtitle": "Sign in to see the team’s announcements.",
     "emailLabel": "Email",
+    "emailPlaceholder": "user@mail.com",
     "passwordLabel": "Password",
-    "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "••••••••",
     "button": "Continue",
-    "errors": {
-      "missing": "Email and password are required.",
-      "invalidCredentials": "Invalid credentials.",
-      "generic": "We couldn't log you in right now."
-    }
+    "errorInvalid": "Invalid credentials.",
+    "errorEmpty": "Email and password are required."
   },
   "profile": {
     "title": "Profile",
     "emailLabel": "Email",
     "displayNameLabel": "Display name",
-    "save": "Save",
-    "logout": "Log out"
+    "saveButton": "Save",
+    "logoutButton": "Log out"
   }
 }

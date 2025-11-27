@@ -13,14 +13,13 @@ const languageOptions = [
 const SettingsScreen: React.FC = () => {
   const {t, i18n} = useTranslation();
   const navigation = useNavigation();
+  const current = i18n.language;
 
   useLayoutEffect(() => {
     navigation.setOptions({
       title: t('settings.title'),
     });
   }, [navigation, t]);
-
-  const current = i18n.language;
 
   const handleChangeLanguage = (code: string) => {
     i18n.changeLanguage(code);
@@ -50,7 +49,6 @@ const SettingsScreen: React.FC = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
