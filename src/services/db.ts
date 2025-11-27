@@ -9,6 +9,14 @@ enablePromise(true);
 
 const DB_NAME = 'carequeue.db';
 const POSTS_TABLE = 'posts';
+const USERS_TABLE = 'users';
+
+export type DbUser = {
+    id: number;
+    email: string;
+    password: string;
+    displayName: string | null;
+};
 
 export async function getDB(): Promise<SQLiteDatabase> {
     return openDatabase({ name: DB_NAME, location: 'default' });
@@ -16,6 +24,8 @@ export async function getDB(): Promise<SQLiteDatabase> {
 
 export async function initDB() {
     const db = await getDB();
+
+    // posts
     await db.executeSql(
         `CREATE TABLE IF NOT EXISTS ${POSTS_TABLE} (
       id TEXT PRIMARY KEY NOT NULL,
@@ -25,7 +35,56 @@ export async function initDB() {
       createdAt TEXT NOT NULL
     );`,
     );
+
+    // users
+    await db.executeSql(
+        `CREATE TABLE IF NOT EXISTS ${USERS_TABLE} (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      displayName TEXT
+    );`,
+    );
+
     return db;
+}
+
+export async function ensureDefaultUser(db: SQLiteDatabase) {
+    const [res] = await db.executeSql(
+        `SELECT id FROM ${USERS_TABLE} WHERE email = ?`,
+        ['user@mail.com'],
+    );
+
+    if (res.rows.length === 0) {
+        await db.executeSql(
+            `INSERT INTO ${USERS_TABLE} (email, password, displayName)
+       VALUES (?, ?, ?)`,
+            ['user@mail.com', 'pass123', 'Demo User'],
+        );
+    }
+}
+
+export async function validateUserCredentials(
+    db: SQLiteDatabase,
+    email: string,
+    password: string,
+): Promise<DbUser | null> {
+    const [res] = await db.executeSql(
+        `SELECT id, email, password, displayName
+     FROM ${USERS_TABLE}
+     WHERE email = ? AND password = ?`,
+        [email, password],
+    );
+
+    if (res.rows.length === 0) return null;
+
+    const row = res.rows.item(0);
+    return {
+        id: row.id,
+        email: row.email,
+        password: row.password,
+        displayName: row.displayName,
+    };
 }
 
 export async function loadPosts(db: SQLiteDatabase): Promise<Post[]> {

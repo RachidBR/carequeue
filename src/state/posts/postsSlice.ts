@@ -16,6 +16,7 @@ const postsSlice = createSlice({
         setPosts(state, action: PayloadAction<Post[]>) {
             state.items = action.payload;
         },
+
         addPost(state, action: PayloadAction<AddPostPayload>) {
             const now = new Date().toISOString();
             const newPost: Post = {

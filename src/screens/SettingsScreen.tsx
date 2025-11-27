@@ -2,6 +2,7 @@ import React, {useLayoutEffect} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {useNavigation} from '@react-navigation/native';
+import {Colors, Spacing, Radius, TextPresets, FontWeight} from '../theme';
 
 const languageOptions = [
   {code: 'fr', key: 'settings.languages.fr'},
@@ -51,27 +52,47 @@ const SettingsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 16, backgroundColor: 'white'},
-  sectionTitle: {fontSize: 16, fontWeight: '600', marginBottom: 4},
-  sectionSubtitle: {fontSize: 13, color: '#6b7280', marginBottom: 16},
-  list: {marginTop: 8},
+  container: {
+    flex: 1,
+    padding: Spacing.lg,
+    backgroundColor: Colors.background,
+  },
+  sectionTitle: {
+    ...TextPresets.H2,
+    marginBottom: Spacing.xs,
+  },
+  sectionSubtitle: {
+    ...TextPresets.Body,
+    color: Colors.textMuted,
+    marginBottom: Spacing.lg,
+  },
+  list: {
+    marginTop: Spacing.sm,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 10,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.md,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    marginBottom: 8,
+    borderColor: Colors.border,
+    marginBottom: Spacing.sm,
     justifyContent: 'space-between',
+    backgroundColor: Colors.background,
   },
   rowActive: {
-    borderColor: '#2563eb',
-    backgroundColor: '#eff6ff',
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primarySoft,
   },
-  rowLabel: {fontSize: 14},
-  check: {fontSize: 16, color: '#2563eb', fontWeight: '700'},
+  rowLabel: {
+    ...TextPresets.Body,
+  },
+  check: {
+    ...TextPresets.Body,
+    color: Colors.primary,
+    fontWeight: FontWeight.BOLD,
+  },
 });
 
 export default SettingsScreen;

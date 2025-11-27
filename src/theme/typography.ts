@@ -14,6 +14,14 @@ export const FontSize = {
     EXTRA_LARGE: 20,
 } as const;
 
+export const FontWeight = {
+    LIGHT: '300',
+    REGULAR: '400',
+    MEDIUM: '500',
+    SEMI_BOLD: '600',
+    BOLD: '700',
+} as const;
+
 type TextPreset = TextStyle;
 
 export const TextPresets: Record<string, TextPreset> = {

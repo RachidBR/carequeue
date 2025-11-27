@@ -16,11 +16,10 @@ import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 import {addPost} from '@/state/posts/postsSlice';
-import { notifyNewPost } from '@/services/notifications';
-import {Colors, FontSize, Radius, Spacing, TextPresets} from '../theme';
-import { getDB, insertPost } from '@/services/db';
-import { Post } from '@/state/posts/types';
-
+import {notifyNewPost} from '@/services/notifications';
+import {Colors, FontSize, FontWeight, Radius, Spacing, TextPresets} from '../theme';
+import {getDB, insertPost} from '@/services/db';
+import {Post} from '@/state/posts/types';
 
 const CreatePostScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -92,59 +91,54 @@ const CreatePostScreen: React.FC = () => {
     }
   };
 
- const handleSave = async () => {
-   if (!title.trim()) {
-     Alert.alert(t('createPost.errors.titleRequired'));
-     return;
-   }
-   if (!body.trim()) {
-     Alert.alert(t('createPost.errors.bodyRequired'));
-     return;
-   }
+  const handleSave = async () => {
+    if (!title.trim()) {
+      Alert.alert(t('createPost.errors.titleRequired'));
+      return;
+    }
+    if (!body.trim()) {
+      Alert.alert(t('createPost.errors.bodyRequired'));
+      return;
+    }
 
-   try {
-     setSaving(true);
+    try {
+      setSaving(true);
 
-     const cleanTitle = title.trim();
-     const cleanBody = body.trim();
+      const cleanTitle = title.trim();
+      const cleanBody = body.trim();
 
-     // create Post object so Redux & SQLite share same data
-     const post: Post = {
-       id: Date.now().toString(),
-       title: cleanTitle,
-       body: cleanBody,
-       imageUrl: imageUri,
-       createdAt: new Date().toISOString(),
-     };
+      // create Post object so Redux & SQLite share same data
+      const post: Post = {
+        id: Date.now().toString(),
+        title: cleanTitle,
+        body: cleanBody,
+        imageUrl: imageUri,
+        createdAt: new Date().toISOString(),
+      };
 
-     // 1) Redux
-     dispatch(
-       addPost({
-         title: post.title,
-         body: post.body,
-         imageUrl: post.imageUrl,
-       }),
-     );
+      const db = await getDB();
+      await insertPost(db, post);
 
-     // 2) SQLite
-     const db = await getDB();
-     await insertPost(db, post);
+      dispatch(
+        addPost({
+          title: post.title,
+          body: post.body,
+          imageUrl: post.imageUrl,
+        }),
+      );
+      await notifyNewPost({title: cleanTitle, body: cleanBody});
 
-     // 3) Local notification (optional)
-     await notifyNewPost({title: cleanTitle, body: cleanBody});
-
-     setTitle('');
-     setBody('');
-     setImageUri(null);
-     navigation.goBack();
-   } catch (error) {
-     console.error('CreatePost : handleSave error', error);
-     Alert.alert('Error', 'Failed to save post.');
-   } finally {
-     setSaving(false);
-   }
- };
-
+      setTitle('');
+      setBody('');
+      setImageUri(null);
+      navigation.goBack();
+    } catch (error) {
+      console.error('CreatePost : handleSave error', error);
+      Alert.alert('Error', 'Failed to save post.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -245,7 +239,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...TextPresets.Body,
-    fontWeight: '500',
+    fontWeight: FontWeight.MEDIUM,
   },
   previewContainer: {
     alignItems: 'center',
@@ -260,7 +254,7 @@ const styles = StyleSheet.create({
   removeButtonText: {
     ...TextPresets.Body,
     color: Colors.danger,
-    fontWeight: '600',
+    fontWeight: FontWeight.SEMI_BOLD,
   },
   primaryButton: {
     marginTop: Spacing.md,
@@ -272,7 +266,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     ...TextPresets.Body,
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: FontWeight.SEMI_BOLD,
     fontSize: FontSize.LARGE,
   },
 });

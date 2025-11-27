@@ -9,8 +9,8 @@ import './src/i18n';
 
 import {initFCM} from '@/services/pushNotifications';
 import {requestNotificationPermissionOnce} from '@/services/notifications';
-import { initDB, loadPosts } from '@/services/db';
-import { setPosts } from '@/state/posts/postsSlice';
+import {initDB, loadPosts, ensureDefaultUser} from '@/services/db';
+import {setPosts} from '@/state/posts/postsSlice';
 
 export default function App() {
   const [dbReady, setDbReady] = React.useState(false);
@@ -19,12 +19,13 @@ export default function App() {
     (async () => {
       try {
         const db = await initDB();
+        await ensureDefaultUser(db);
         const posts = await loadPosts(db);
         store.dispatch(setPosts(posts));
         setDbReady(true);
       } catch (e) {
         console.error('[DB] init error', e);
-        setDbReady(true); // app still works with empty posts
+        setDbReady(true);
       }
     })();
 
@@ -33,10 +34,8 @@ export default function App() {
   }, []);
 
   if (!dbReady) {
-    // super simple splash
     return null;
   }
-
 
   return (
     <Provider store={store}>

@@ -9,4 +9,7 @@ export const Colors = {
     danger: '#DC2626',
     dangerSoft: '#FEE2E2',
     card: '#FFFFFF',
+
+    white: '#FFFFFF',
+    grey: '#555'
 } as const;

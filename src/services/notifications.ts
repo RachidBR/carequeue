@@ -9,8 +9,7 @@ export async function requestNotificationPermissionOnce() {
     if (permissionAskedOnce) return;
     permissionAskedOnce = true;
 
-    const settings = await notifee.requestPermission();
-    // you could log / handle DENIED here if you want
+  await notifee.requestPermission();
 }
 
 async function ensureDefaultChannel() {

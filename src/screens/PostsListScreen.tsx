@@ -5,6 +5,7 @@ import {useSelector} from 'react-redux';
 import {RootState} from '../state/store';
 import {useTranslation} from 'react-i18next';
 import {Post} from '@/state/posts/types';
+import { Colors, FontSize, FontWeight, Radius, Spacing } from '../theme';
 
 const PostsListScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -28,7 +29,6 @@ const PostsListScreen: React.FC = () => {
     <TouchableOpacity
       style={styles.card}
       onPress={() =>
-        // quick + dirty typing
         navigation.navigate('PostDetail' as never, {id: item.id} as never)
       }>
       <Text style={styles.cardTitle}>{item.title}</Text>
@@ -58,37 +58,49 @@ const PostsListScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#f5f5f5'},
+  container: {flex: 1, backgroundColor: Colors.backgroundMuted},
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: Spacing.lg,
   },
-  emptyTitle: {fontSize: 18, fontWeight: '600', marginBottom: 8},
-  emptySubtitle: {fontSize: 14, color: '#555', textAlign: 'center'},
+  emptyTitle: {
+    fontSize: FontSize.LARGE,
+    fontWeight: FontWeight.SEMI_BOLD,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: FontSize.MEDIUM,
+    color: Colors.grey,
+    textAlign: 'center',
+  },
   emptyListContent: {flexGrow: 1, justifyContent: 'center'},
   card: {
-    backgroundColor: 'white',
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 12,
+    backgroundColor: Colors.background,
+    padding: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginVertical: Spacing.xs,
+    borderRadius: Spacing.sm,
     elevation: 2,
   },
-  cardTitle: {fontSize: 16, fontWeight: '600', marginBottom: 4},
-  cardBody: {fontSize: 14, color: '#555'},
+  cardTitle: {
+    fontSize: Spacing.md,
+    fontWeight: FontWeight.SEMI_BOLD,
+    marginBottom: Spacing.xxs,
+  },
+  cardBody: {fontSize: FontSize.MEDIUM, color: Colors.grey},
   fab: {
     position: 'absolute',
-    right: 16,
-    bottom: 24,
+    right: Spacing.md,
+    bottom: Spacing.lg,
     backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-    elevation: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.pill,
+    elevation: Spacing.xxs,
   },
-  fabText: {color: 'white', fontWeight: '600'},
+  fabText: {color: Colors.white, fontWeight: FontWeight.SEMI_BOLD},
 });
 
 export default PostsListScreen;

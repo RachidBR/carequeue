@@ -42,7 +42,6 @@ export async function initFCM() {
 
         onMessage(msg, async remoteMessage => {
             console.log('[FCM] onMessage (foreground):', remoteMessage);
-            // (optional) call Notifee here to show a banner even in foreground
         });
 
         onNotificationOpenedApp(
@@ -72,7 +71,7 @@ export async function initFCM() {
 export function navigateToPostFromNotification(postId: string) {
     console.log('[Nav] navigateToPostFromNotification', postId);
 
-    navigate('MainTabs' as any, {
+    navigate('MainTabs', {
         screen: 'PostsTab',
         params: {
             screen: 'PostDetail',

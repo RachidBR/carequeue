@@ -1,17 +1,22 @@
 import React from 'react';
+import {Text} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {Text} from 'react-native';
 import {useSelector} from 'react-redux';
-import {RootState} from '@/state/store';
 
-import PostsListScreen from '../screens/PostsListScreen';
-import PostDetailScreen from '../screens/PostDetailScreen';
-import CreatePostScreen from '../screens/CreatePostScreen';
-import { MainTabsParamList, PostsStackParamList, RootStackParamList } from '@/types/navigation';
+import {RootState} from '@/state/store';
+import PostsListScreen from '@/screens/PostsListScreen';
+import PostDetailScreen from '@/screens/PostDetailScreen';
+import CreatePostScreen from '@/screens/CreatePostScreen';
+import SettingsScreen from '@/screens/SettingsScreen';
 import LoginScreen from '@/screens/LoginScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
 
+import {
+  RootStackParamList,
+  MainTabsParamList,
+  PostsStackParamList,
+} from '@/types/navigation';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabsParamList>();
@@ -47,6 +52,7 @@ function MainTabs() {
         component={PostsStackNavigator}
         options={{title: 'Posts'}}
       />
+
       <Tabs.Screen
         name="ProfileTab"
         component={ProfileScreen}
@@ -55,11 +61,20 @@ function MainTabs() {
           tabBarIcon: () => <Text>👤</Text>,
         }}
       />
+
+      <Tabs.Screen
+        name="SettingsTab"
+        component={SettingsScreen}
+        options={{
+          title: 'Settings',
+          tabBarIcon: () => <Text>⚙️</Text>,
+        }}
+      />
     </Tabs.Navigator>
   );
 }
 
-const AppNavigator = () => {
+const AppNavigator: React.FC = () => {
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
 
   return (

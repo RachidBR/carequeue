@@ -5,6 +5,7 @@ import {useSelector} from 'react-redux';
 import {RootState} from '../state/store';
 import {useTranslation} from 'react-i18next';
 import { PostsStackParamList } from '@/types/navigation';
+import { Colors, FontSize, Radius, Spacing, TextPresets } from '../theme';
 
 type PostDetailRouteProp = RouteProp<PostsStackParamList, 'PostDetail'>;
 
@@ -24,13 +25,18 @@ const PostDetailScreen: React.FC = () => {
     });
   }, [navigation, post, t]);
 
-  if (!post) {
-    return (
-      <View style={styles.center}>
-        <Text>{t('postDetail.notFound')}</Text>
-      </View>
-    );
-  }
+ if (!post) {
+  return (
+    <View style={styles.centered}>
+      <Text style={styles.notFoundTitle}>
+        {t('postDetail.notFound')}
+      </Text>
+      <Text style={styles.notFoundSubtitle}>
+        {t('postDetail.notFoundHelp')}
+      </Text>
+    </View>
+  );
+}
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -48,22 +54,57 @@ const PostDetailScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: 'white'},
-  content: {padding: 16},
-  center: {
+  container: {
     flex: 1,
+    backgroundColor: Colors.background,
+  },
+  content: {
+    padding: Spacing.md,
+    paddingBottom: Spacing.xl,
+  },
+  centered: {
+    flex: 1,
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: Spacing.lg,
+  },
+  notFoundTitle: {
+    ...TextPresets.title,
+    marginBottom: Spacing.xs,
+  },
+  notFoundSubtitle: {
+    ...TextPresets.body,
+    color: Colors.textMuted,
+    textAlign: 'center',
   },
   image: {
     width: '100%',
     height: 220,
-    borderRadius: 12,
-    marginBottom: 16,
+    borderRadius: Radius.pill,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.border,
   },
-  title: {fontSize: 20, fontWeight: '700', marginBottom: 8},
-  date: {fontSize: 12, color: '#6b7280', marginBottom: 16},
-  body: {fontSize: 14, lineHeight: 20},
+  title: {
+    ...TextPresets.h1,
+    marginBottom: Spacing.xs,
+  },
+  date: {
+    ...TextPresets.caption,
+    color: Colors.textMuted,
+    marginBottom: Spacing.md,
+  },
+  meta: {
+    ...TextPresets.caption,
+    color: Colors.textMuted,
+    marginBottom: Spacing.md,
+  },
+  body: {
+    ...TextPresets.body,
+    fontSize: FontSize.MEDIUM,
+    lineHeight: Spacing.sm,
+  },
 });
+
 
 export default PostDetailScreen;
