@@ -7,18 +7,48 @@ import {
     onNotificationOpenedApp,
     getInitialNotification,
     AuthorizationStatus,
+    FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
 import { getApp } from '@react-native-firebase/app';
-import notifee from '@notifee/react-native';
-import { navigate } from '../navigation/navigationRef';
+import notifee, {
+    AndroidImportance,
+    AndroidVisibility,
+    EventType,
+} from '@notifee/react-native';
+import { navigate } from '@/navigation/navigationRef';
+
+// Deep-link into PostsTab -> PostDetail
+export function navigateToPostFromNotification(postId: string) {
+    console.log('[Nav] navigateToPostFromNotification', postId);
+
+    navigate('MainTabs' as any, {
+        screen: 'PostsTab',
+        params: {
+            screen: 'PostDetail',
+            params: { id: postId },
+        },
+    });
+}
+
+async function ensureDefaultChannel() {
+    if (Platform.OS === 'android') {
+        await notifee.createChannel({
+            id: 'default',
+            name: 'Default',
+            importance: AndroidImportance.HIGH,
+            visibility: AndroidVisibility.PUBLIC,
+        });
+    }
+}
 
 export async function initFCM() {
     console.log('[FCM] initFCM start');
 
-    const app = getApp();
-    const msg = getMessaging(app);
-
     try {
+        const app = getApp();
+        const msg = getMessaging(app);
+
+        // ---- Permissions (FCM / APNS) ----
         const authStatus = await requestPermission(msg);
         console.log('[FCM] permission status =', authStatus);
 
@@ -26,55 +56,79 @@ export async function initFCM() {
             authStatus === AuthorizationStatus.AUTHORIZED ||
             authStatus === AuthorizationStatus.PROVISIONAL;
 
-        if (!enabled && Platform.OS === 'ios') {
-            Alert.alert(
-                'Notifications désactivées',
-                "Tu peux les activer plus tard dans les réglages du téléphone.",
-            );
+        if (!enabled) {
+            console.log('[FCM] notifications not allowed');
+            if (Platform.OS === 'ios') {
+                Alert.alert(
+                    'Notifications désactivées',
+                    "Tu peux les activer plus tard dans les réglages du téléphone.",
+                );
+            }
         }
 
+        // ---- Device token (for Firebase Console "test message") ----
         try {
             const token = await getToken(msg);
             console.log('[FCM] device token =', token);
+            // Paste this token in Firebase Console → Cloud Messaging → "Send test message"
         } catch (err) {
             console.warn('[FCM] getToken error:', err);
         }
 
-        // FOREGROUND -> show Notifee local notif
-        onMessage(msg, async remoteMessage => {
-            console.log('[FCM] onMessage (foreground):', remoteMessage);
+        // ---- Foreground FCM -> show Notifee banner ----
+        onMessage(
+            msg,
+            async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+                console.log('[FCM] onMessage (foreground):', remoteMessage);
 
-            const notif = remoteMessage.notification;
-            if (!notif) return;
+                await ensureDefaultChannel();
 
-            await notifee.displayNotification({
-                title: notif.title ?? 'CareQueue',
-                body: notif.body ?? '',
-                android: {
-                    channelId: 'default',
-                    pressAction: { id: 'default' },
-                },
-            });
-        });
+                const title =
+                    remoteMessage.notification?.title ?? 'CareQueue';
+                const body =
+                    remoteMessage.notification?.body ?? '';
 
-        // BACKGROUND TAP
+                const postId = remoteMessage.data?.postId;
+
+                await notifee.displayNotification({
+                    title,
+                    body,
+                    android: {
+                        channelId: 'default',
+                        pressAction: {
+                            id: 'default',
+                        },
+                    },
+                    // store postId so we can read it when the notification is tapped
+                    data: postId ? { postId } : undefined,
+                });
+            },
+        );
+
+        // ---- App opened from background via FCM tap ----
         onNotificationOpenedApp(msg, remoteMessage => {
             console.log('[FCM] onNotificationOpenedApp:', remoteMessage?.data);
-            const postId = remoteMessage?.data?.postId;
-            if (typeof postId === 'string') {
+
+            const raw = remoteMessage?.data?.postId;
+            const postId = typeof raw === 'string' ? raw : undefined;
+            if (postId) {
                 navigateToPostFromNotification(postId);
             }
         });
 
-        // COLD START TAP
+        // ---- App opened from *killed* state via FCM tap ----
         const initialNotification = await getInitialNotification(msg);
-        const initialPostId = initialNotification?.data?.postId;
-        if (typeof initialPostId === 'string') {
+        if (initialNotification?.data) {
             console.log(
-                '[FCM] getInitialNotification with postId:',
-                initialPostId,
+                '[FCM] getInitialNotification data:',
+                initialNotification.data,
             );
-            navigateToPostFromNotification(initialPostId);
+
+            const raw = initialNotification.data.postId;
+            const postId = typeof raw === 'string' ? raw : undefined;
+            if (postId) {
+                navigateToPostFromNotification(postId);
+            }
         }
 
         console.log('[FCM] initFCM done');
@@ -83,13 +137,25 @@ export async function initFCM() {
     }
 }
 
-export function navigateToPostFromNotification(postId: string) {
-    console.log('[Nav] navigateToPostFromNotification', postId);
-    navigate('MainTabs' as any, {
-        screen: 'PostsTab',
-        params: {
-            screen: 'PostDetail',
-            params: { id: postId },
-        },
+// ---- Notifee tap → navigate to PostDetail ----
+// This handles taps on the local notifications we create in onMessage (foreground).
+export function registerNotifeeNavigationHandler() {
+    notifee.onForegroundEvent(async ({ type, detail }) => {
+        if (type === EventType.PRESS) {
+            const postId = detail.notification?.data?.postId;
+            if (postId) {
+                navigateToPostFromNotification(String(postId));
+            }
+        }
+    });
+
+    // You *can* also hook into background events if you want:
+    notifee.onBackgroundEvent(async ({ type, detail }) => {
+        if (type === EventType.PRESS) {
+            const postId = detail.notification?.data?.postId;
+            if (postId) {
+                navigateToPostFromNotification(String(postId));
+            }
+        }
     });
 }

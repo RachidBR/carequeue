@@ -8,9 +8,10 @@ import linking from './src/navigation/linking';
 import './src/i18n';
 
 import {initFCM} from '@/services/pushNotifications';
-import {requestNotificationPermissionOnce} from '@/services/notifications';
+import {initNotifeeNavigationHandlers, requestNotificationPermissionOnce} from '@/services/notifications';
 import {ensureDefaultUser, initDB, loadPosts} from '@/services/db';
 import {setPosts} from '@/state/posts/postsSlice';
+import { flushPendingNotificationNavigation, navigationRef } from '@/navigation/navigationRef';
 
 export default function App() {
   const [dbReady, setDbReady] = React.useState(false);
@@ -29,8 +30,9 @@ export default function App() {
       }
     })();
 
-    requestNotificationPermissionOnce();
     initFCM().catch(err => console.warn('[FCM] init error', err));
+    requestNotificationPermissionOnce();
+    initNotifeeNavigationHandlers();
   }, []);
 
   if (!dbReady) {
@@ -39,7 +41,10 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <NavigationContainer linking={linking}>
+      <NavigationContainer
+        ref={navigationRef}
+        linking={linking}
+        onReady={flushPendingNotificationNavigation}>
         <StatusBar barStyle="dark-content" />
         <AppNavigator />
       </NavigationContainer>

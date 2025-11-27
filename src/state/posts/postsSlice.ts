@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { Post, AddPostPayload } from './types';
+import type { Post } from './types';
 
 type PostsState = {
     items: Post[];
@@ -17,14 +17,8 @@ const postsSlice = createSlice({
             state.items = action.payload;
         },
 
-        addPost(state, action: PayloadAction<AddPostPayload>) {
-            const now = new Date().toISOString();
-            const newPost: Post = {
-                id: Date.now().toString(),
-                createdAt: now,
-                ...action.payload,
-            };
-            state.items.unshift(newPost);
+        addPost(state, action: PayloadAction<Post>) {
+            state.items.unshift(action.payload);
         },
     },
 });

@@ -5,9 +5,3 @@ export type Post = {
     imageUrl: string | null;
     createdAt: string;
 };
-
-export type AddPostPayload = {
-    title: string;
-    body: string;
-    imageUrl: string | null;
-};

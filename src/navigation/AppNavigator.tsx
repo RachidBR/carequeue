@@ -50,7 +50,11 @@ function MainTabs() {
       <Tabs.Screen
         name="PostsTab"
         component={PostsStackNavigator}
-        options={{title: 'Posts'}}
+        options={{
+          title: 'Posts',
+          tabBarIcon: () => <Text>📄</Text>,
+        }}
+        
       />
 
       <Tabs.Screen
