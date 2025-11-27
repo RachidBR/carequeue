@@ -19,7 +19,6 @@ import {addPost} from '@/state/posts/postsSlice';
 import {notifyNewPost} from '@/services/notifications';
 import {Colors, FontSize, FontWeight, Radius, Spacing, TextPresets} from '../theme';
 import {getDB, insertPost} from '@/services/db';
-import {Post} from '@/state/posts/types';
 
 const CreatePostScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -101,43 +100,48 @@ const CreatePostScreen: React.FC = () => {
       return;
     }
 
-    try {
-      setSaving(true);
+  try {
+    setSaving(true);
 
-      const cleanTitle = title.trim();
-      const cleanBody = body.trim();
+    const cleanTitle = title.trim();
+    const cleanBody = body.trim();
+    const id = Date.now().toString();
+    const createdAt = new Date().toISOString();
 
-      // create Post object so Redux & SQLite share same data
-      const post: Post = {
-        id: Date.now().toString(),
+    // 1) Save to DB
+    const db = await getDB();
+    await insertPost(db, {
+      id,
+      title: cleanTitle,
+      body: cleanBody,
+      imageUrl: imageUri,
+      createdAt,
+    });
+
+    // 2) Update Redux
+    dispatch(
+      addPost({
+        id,
         title: cleanTitle,
         body: cleanBody,
         imageUrl: imageUri,
-        createdAt: new Date().toISOString(),
-      };
+        createdAt,
+      }),
+    );
 
-      const db = await getDB();
-      await insertPost(db, post);
+    // 3) Fire local notification WITH postId
+    await notifyNewPost({id, title: cleanTitle, body: cleanBody});
 
-      dispatch(
-        addPost({
-          title: post.title,
-          body: post.body,
-          imageUrl: post.imageUrl,
-        }),
-      );
-      await notifyNewPost({title: cleanTitle, body: cleanBody});
-
-      setTitle('');
-      setBody('');
-      setImageUri(null);
-      navigation.goBack();
-    } catch (error) {
-      console.error('CreatePost : handleSave error', error);
-      Alert.alert('Error', 'Failed to save post.');
-    } finally {
-      setSaving(false);
-    }
+    setTitle('');
+    setBody('');
+    setImageUri(null);
+    navigation.goBack();
+  } catch (error) {
+    console.error('CreatePost : handleSave error', error);
+    Alert.alert('Error', 'Failed to save post.');
+  } finally {
+    setSaving(false);
+  }
   };
 
   return (
