@@ -44,6 +44,7 @@ const PostDetailScreen: React.FC = () => {
         <Image source={{uri: post.imageUrl}} style={styles.image} />
       ) : null}
 
+      <Text style={styles.title}>id : {post.id}</Text>
       <Text style={styles.title}>{post.title}</Text>
       <Text style={styles.date}>
         {new Date(post.createdAt).toLocaleString()}
@@ -86,6 +87,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.border,
   },
   title: {
+    ...TextPresets.h1,
+    marginBottom: Spacing.xs,
+  },
+  id: {
     ...TextPresets.h1,
     marginBottom: Spacing.xs,
   },
