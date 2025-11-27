@@ -4,6 +4,9 @@
     "feed": "Fil d’actualités",
     "settings": "Paramètres"
   },
+  "common": {
+    "error": "Une erreur est survenue."
+  },
   "postsList": {
     "title": "Annonces",
     "emptyTitle": "Aucune annonce pour le moment",
@@ -30,7 +33,9 @@
   },
   "postDetail": {
     "title": "Détail de l’annonce",
-    "createdAt": "Créé le {{date}}"
+    "titleFallback": "Détail de l’annonce",
+    "createdAt": "Créé le {{date}}",
+    "notFound": "Annonce introuvable."
   },
   "permissions": {
     "cameraRequired": "L’accès à la caméra est nécessaire.",
@@ -44,10 +49,27 @@
       "fr": "Français",
       "en": "Anglais",
       "de": "Allemand"
-    },
-    "postDetail": {
-      "title": "Détail du post",
-      "notFound": "Post introuvable."
     }
+  },
+  "login": {
+    "title": "CareQueue",
+    "subtitle": "Connecte-toi pour voir les annonces de l’équipe.",
+    "emailLabel": "Email",
+    "passwordLabel": "Mot de passe",
+    "emailPlaceholder": "toi@example.com",
+    "passwordPlaceholder": "••••••••",
+    "button": "Continuer",
+    "errors": {
+      "missing": "Email et mot de passe sont obligatoires.",
+      "invalidCredentials": "Identifiants incorrects.",
+      "generic": "Impossible de te connecter pour le moment."
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "emailLabel": "Email",
+    "displayNameLabel": "Nom affiché",
+    "save": "Enregistrer",
+    "logout": "Se déconnecter"
   }
 }
