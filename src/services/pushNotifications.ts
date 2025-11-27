@@ -7,9 +7,9 @@ import {
     onNotificationOpenedApp,
     getInitialNotification,
     AuthorizationStatus,
-    FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
 import { getApp } from '@react-native-firebase/app';
+import notifee from '@notifee/react-native';
 import { navigate } from '../navigation/navigationRef';
 
 export async function initFCM() {
@@ -40,26 +40,41 @@ export async function initFCM() {
             console.warn('[FCM] getToken error:', err);
         }
 
+        // FOREGROUND -> show Notifee local notif
         onMessage(msg, async remoteMessage => {
             console.log('[FCM] onMessage (foreground):', remoteMessage);
+
+            const notif = remoteMessage.notification;
+            if (!notif) return;
+
+            await notifee.displayNotification({
+                title: notif.title ?? 'CareQueue',
+                body: notif.body ?? '',
+                android: {
+                    channelId: 'default',
+                    pressAction: { id: 'default' },
+                },
+            });
         });
 
-        onNotificationOpenedApp(
-            msg,
-            (remoteMessage: FirebaseMessagingTypes.RemoteMessage | null) => {
-                console.log('[FCM] onNotificationOpenedApp:', remoteMessage?.data);
-                const postId = remoteMessage?.data?.postId;
-                if (postId) navigateToPostFromNotification(String(postId));
-            },
-        );
+        // BACKGROUND TAP
+        onNotificationOpenedApp(msg, remoteMessage => {
+            console.log('[FCM] onNotificationOpenedApp:', remoteMessage?.data);
+            const postId = remoteMessage?.data?.postId;
+            if (typeof postId === 'string') {
+                navigateToPostFromNotification(postId);
+            }
+        });
 
+        // COLD START TAP
         const initialNotification = await getInitialNotification(msg);
-        if (initialNotification?.data?.postId) {
+        const initialPostId = initialNotification?.data?.postId;
+        if (typeof initialPostId === 'string') {
             console.log(
                 '[FCM] getInitialNotification with postId:',
-                initialNotification.data.postId,
+                initialPostId,
             );
-            navigateToPostFromNotification(String(initialNotification.data.postId));
+            navigateToPostFromNotification(initialPostId);
         }
 
         console.log('[FCM] initFCM done');
@@ -70,8 +85,7 @@ export async function initFCM() {
 
 export function navigateToPostFromNotification(postId: string) {
     console.log('[Nav] navigateToPostFromNotification', postId);
-
-    navigate('MainTabs', {
+    navigate('MainTabs' as any, {
         screen: 'PostsTab',
         params: {
             screen: 'PostDetail',

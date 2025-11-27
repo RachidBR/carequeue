@@ -4,9 +4,6 @@
     "feed": "Übersicht",
     "settings": "Einstellungen"
   },
-  "common": {
-    "error": "Es ist ein Fehler aufgetreten."
-  },
   "postsList": {
     "title": "Mitteilungen",
     "emptyTitle": "Noch keine Mitteilungen",
@@ -27,13 +24,10 @@
     "errors": {
       "titleRequired": "Titel ist erforderlich.",
       "bodyRequired": "Inhalt ist erforderlich."
-    },
-    "imageUploadFailedTitle": "Bild wurde nicht gespeichert",
-    "imageUploadFailedMessage": "Die Nachricht wurde gespeichert, aber ohne Bild."
+    }
   },
   "postDetail": {
     "title": "Mitteilungsdetails",
-    "titleFallback": "Mitteilungsdetails",
     "createdAt": "Erstellt am {{date}}",
     "notFound": "Mitteilung nicht gefunden."
   },
@@ -53,23 +47,20 @@
   },
   "login": {
     "title": "CareQueue",
-    "subtitle": "Melde dich an, um die Team-Mitteilungen zu sehen.",
+    "subtitle": "Melde dich an, um Teammitteilungen zu sehen.",
     "emailLabel": "E-Mail",
+    "emailPlaceholder": "user@mail.com",
     "passwordLabel": "Passwort",
-    "emailPlaceholder": "du@example.com",
     "passwordPlaceholder": "••••••••",
     "button": "Weiter",
-    "errors": {
-      "missing": "E-Mail und Passwort sind erforderlich.",
-      "invalidCredentials": "Ungültige Zugangsdaten.",
-      "generic": "Anmeldung derzeit nicht möglich."
-    }
+    "errorInvalid": "Ungültige Zugangsdaten.",
+    "errorEmpty": "E-Mail und Passwort sind erforderlich."
   },
   "profile": {
     "title": "Profil",
     "emailLabel": "E-Mail",
     "displayNameLabel": "Anzeigename",
-    "save": "Speichern",
-    "logout": "Abmelden"
+    "saveButton": "Speichern",
+    "logoutButton": "Abmelden"
   }
 }

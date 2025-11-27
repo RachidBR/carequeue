@@ -9,14 +9,19 @@ import {
 } from 'react-native';
 import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
+import {Colors, Spacing, Radius, TextPresets, FontSize} from '../theme';
 import {login} from '@/state/user/userSlice';
-import {Colors, Spacing, Radius, TextPresets, FontSize, FontWeight} from '../theme';
-import {getDB, ensureDefaultUser, validateUserCredentials} from '@/services/db';
+import {initDB, findUserByEmail, createUserIfNotExists} from '@/services/db';
+
+const DEFAULT_USER = {
+  email: 'user@mail.com',
+  password: 'pass123',
+  displayName: 'CareQueue User',
+};
 
 const LoginScreen: React.FC = () => {
   const dispatch = useDispatch();
   const {t} = useTranslation();
-
   const [email, setEmail] = useState('user@mail.com');
   const [password, setPassword] = useState('pass123');
   const [loading, setLoading] = useState(false);
@@ -26,41 +31,35 @@ const LoginScreen: React.FC = () => {
     const cleanPassword = password.trim();
 
     if (!cleanEmail || !cleanPassword) {
-      Alert.alert(t('common.error'), t('login.errors.missing'));
+      Alert.alert(t('login.errorEmpty'));
       return;
     }
 
     try {
       setLoading(true);
-      const db = await getDB();
-      // make sure demo user exists
-      await ensureDefaultUser(db);
+      const db = await initDB();
 
-      const dbUser = await validateUserCredentials(
-        db,
-        cleanEmail,
-        cleanPassword,
-      );
+      // 1) ensure default user exists
+      await createUserIfNotExists(db, DEFAULT_USER);
 
-      if (!dbUser) {
-        Alert.alert(
-          t('login.errors.invalidTitle'),
-          t('login.errors.invalidMessage'),
-        );
+      // 2) find user
+      const user = await findUserByEmail(db, cleanEmail);
+
+      if (!user || user.password !== cleanPassword) {
+        Alert.alert(t('login.errorInvalid'));
         return;
       }
 
-      // success -> update Redux
+      // 3) Redux login
       dispatch(
         login({
-          email: dbUser.email,
-          // if your userSlice login only expects {email}, this still works.
-          displayName: dbUser.displayName ?? 'User',
-        } as any),
+          email: user.email,
+          displayName: user.displayName ?? '',
+        }),
       );
     } catch (e) {
       console.error('[Login] error', e);
-      Alert.alert(t('common.error'), t('login.errors.generic'));
+      Alert.alert('Error', 'Login failed.');
     } finally {
       setLoading(false);
     }
@@ -98,6 +97,13 @@ const LoginScreen: React.FC = () => {
           {loading ? '...' : t('login.button')}
         </Text>
       </TouchableOpacity>
+
+      <View style={styles.helper}>
+        <Text style={styles.helperText}>
+          {/* small hint for interview/demo */}
+          user@mail.com / pass123
+        </Text>
+      </View>
     </View>
   );
 };
@@ -129,7 +135,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
     fontSize: FontSize.MEDIUM,
     marginBottom: Spacing.md,
-    backgroundColor: Colors.background,
   },
   button: {
     marginTop: Spacing.md,
@@ -140,8 +145,16 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...TextPresets.Body,
-    fontWeight: FontWeight.SEMI_BOLD,
-    color: Colors.white,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  helper: {
+    marginTop: Spacing.md,
+    alignItems: 'center',
+  },
+  helperText: {
+    ...TextPresets.Caption,
+    color: Colors.textMuted,
   },
 });
 

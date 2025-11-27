@@ -4,9 +4,6 @@
     "feed": "Fil d’actualités",
     "settings": "Paramètres"
   },
-  "common": {
-    "error": "Une erreur est survenue."
-  },
   "postsList": {
     "title": "Annonces",
     "emptyTitle": "Aucune annonce pour le moment",
@@ -33,7 +30,6 @@
   },
   "postDetail": {
     "title": "Détail de l’annonce",
-    "titleFallback": "Détail de l’annonce",
     "createdAt": "Créé le {{date}}",
     "notFound": "Annonce introuvable."
   },
@@ -55,21 +51,18 @@
     "title": "CareQueue",
     "subtitle": "Connecte-toi pour voir les annonces de l’équipe.",
     "emailLabel": "Email",
+    "emailPlaceholder": "user@mail.com",
     "passwordLabel": "Mot de passe",
-    "emailPlaceholder": "toi@example.com",
     "passwordPlaceholder": "••••••••",
     "button": "Continuer",
-    "errors": {
-      "missing": "Email et mot de passe sont obligatoires.",
-      "invalidCredentials": "Identifiants incorrects.",
-      "generic": "Impossible de te connecter pour le moment."
-    }
+    "errorInvalid": "Identifiants invalides.",
+    "errorEmpty": "Email et mot de passe sont obligatoires."
   },
   "profile": {
     "title": "Profil",
     "emailLabel": "Email",
     "displayNameLabel": "Nom affiché",
-    "save": "Enregistrer",
-    "logout": "Se déconnecter"
+    "saveButton": "Enregistrer",
+    "logoutButton": "Se déconnecter"
   }
 }

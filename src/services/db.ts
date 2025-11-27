@@ -1,3 +1,4 @@
+// src/services/db.ts
 import {
     enablePromise,
     openDatabase,
@@ -10,13 +11,6 @@ enablePromise(true);
 const DB_NAME = 'carequeue.db';
 const POSTS_TABLE = 'posts';
 const USERS_TABLE = 'users';
-
-export type DbUser = {
-    id: number;
-    email: string;
-    password: string;
-    displayName: string | null;
-};
 
 export async function getDB(): Promise<SQLiteDatabase> {
     return openDatabase({ name: DB_NAME, location: 'default' });
@@ -39,52 +33,13 @@ export async function initDB() {
     // users
     await db.executeSql(
         `CREATE TABLE IF NOT EXISTS ${USERS_TABLE} (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
+      email TEXT PRIMARY KEY NOT NULL,
       password TEXT NOT NULL,
       displayName TEXT
     );`,
     );
 
     return db;
-}
-
-export async function ensureDefaultUser(db: SQLiteDatabase) {
-    const [res] = await db.executeSql(
-        `SELECT id FROM ${USERS_TABLE} WHERE email = ?`,
-        ['user@mail.com'],
-    );
-
-    if (res.rows.length === 0) {
-        await db.executeSql(
-            `INSERT INTO ${USERS_TABLE} (email, password, displayName)
-       VALUES (?, ?, ?)`,
-            ['user@mail.com', 'pass123', 'Demo User'],
-        );
-    }
-}
-
-export async function validateUserCredentials(
-    db: SQLiteDatabase,
-    email: string,
-    password: string,
-): Promise<DbUser | null> {
-    const [res] = await db.executeSql(
-        `SELECT id, email, password, displayName
-     FROM ${USERS_TABLE}
-     WHERE email = ? AND password = ?`,
-        [email, password],
-    );
-
-    if (res.rows.length === 0) return null;
-
-    const row = res.rows.item(0);
-    return {
-        id: row.id,
-        email: row.email,
-        password: row.password,
-        displayName: row.displayName,
-    };
 }
 
 export async function loadPosts(db: SQLiteDatabase): Promise<Post[]> {
@@ -117,4 +72,73 @@ export async function insertPost(db: SQLiteDatabase, post: Post) {
      VALUES (?, ?, ?, ?, ?)`,
         [post.id, post.title, post.body, post.imageUrl, post.createdAt],
     );
+}
+
+// ---- users helpers ----
+type DbUser = {
+    email: string;
+    password: string;
+    displayName: string | null;
+};
+
+export async function findUserByEmail(
+    db: SQLiteDatabase,
+    email: string,
+): Promise<DbUser | null> {
+    const [result] = await db.executeSql(
+        `SELECT email, password, displayName
+     FROM ${USERS_TABLE}
+     WHERE email = ?`,
+        [email],
+    );
+    if (result.rows.length === 0) return null;
+    const row = result.rows.item(0);
+    return {
+        email: row.email,
+        password: row.password,
+        displayName: row.displayName,
+    };
+}
+
+export async function createUser(
+    db: SQLiteDatabase,
+    user: { email: string; password: string; displayName?: string },
+) {
+    await db.executeSql(
+        `INSERT INTO ${USERS_TABLE} (email, password, displayName)
+     VALUES (?, ?, ?)`,
+        [user.email, user.password, user.displayName ?? null],
+    );
+}
+
+export async function createUserIfNotExists(
+    db: SQLiteDatabase,
+    user: { email: string; password: string; displayName?: string },
+) {
+    const existing = await findUserByEmail(db, user.email);
+    if (!existing) {
+        await createUser(db, user);
+    }
+}
+
+export async function updateUserDisplayName(
+    db: SQLiteDatabase,
+    email: string,
+    displayName: string,
+) {
+    await db.executeSql(
+        `UPDATE ${USERS_TABLE}
+     SET displayName = ?
+     WHERE email = ?`,
+        [displayName, email],
+    );
+}
+
+
+export async function ensureDefaultUser(db: SQLiteDatabase) {
+    await createUserIfNotExists(db, {
+        email: 'user@mail.com',
+        password: 'pass123',
+        displayName: 'Demo User',
+    });
 }

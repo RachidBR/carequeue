@@ -9,7 +9,7 @@ import './src/i18n';
 
 import {initFCM} from '@/services/pushNotifications';
 import {requestNotificationPermissionOnce} from '@/services/notifications';
-import {initDB, loadPosts, ensureDefaultUser} from '@/services/db';
+import {ensureDefaultUser, initDB, loadPosts} from '@/services/db';
 import {setPosts} from '@/state/posts/postsSlice';
 
 export default function App() {
